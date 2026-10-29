@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kovan"
+version = "0.1.0"
+description = "Tek prompt, çok ajan: Claude Code ve Codex'i MCP ile birlikte çalıştıran orkestratör"
+requires-python = ">=3.10"
+dependencies = ["mcp>=1.2"]
+
+[project.scripts]
+kovan = "kovan.cli:main"
+
+[tool.setuptools]
+packages = ["kovan"]
