@@ -125,8 +125,12 @@ def test_workdir_traversal_blocked(srv):
 
 
 def test_body_limit_and_bad_json(srv):
-    big = json.dumps({"prompt": "x" * (srv.cfg["max_body_bytes"] + 10)}).encode()
-    assert call(srv, "POST", "/api/run", raw=big)[0] == 413
+    # Sunucu Content-Length'e bakıp gövdeyi okumadan 413 döner; gövdeyi göndermeden yalnızca başlıkları yolla
+    import socket
+    with socket.create_connection(("127.0.0.1", srv.server_address[1]), timeout=10) as sock:
+        sock.sendall((f"POST /api/run HTTP/1.1\r\nHost: 127.0.0.1\r\nAuthorization: Bearer {TOKEN}\r\n"
+                      f"Content-Type: application/json\r\nContent-Length: {srv.cfg['max_body_bytes'] + 10}\r\n\r\n").encode())
+        assert sock.recv(64).startswith(b"HTTP/1.0 413")
     assert call(srv, "POST", "/api/run", raw=b"{bozuk")[0] == 400
     assert call(srv, "POST", "/api/run", {"prompt": " "})[0] == 400
     assert call(srv, "POST", "/api/run", {"prompt": "x", "workers": 99})[0] == 400
