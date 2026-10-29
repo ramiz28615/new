@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Kovan</title>
+<style>
+:root{--bg:#0d0f12;--card:#161a20;--line:#262c35;--txt:#e7e9ee;--mut:#8a93a3;--acc:#f5b301;--ok:#3ecf8e;--bad:#ff5d5d;--info:#7aa7ff}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt)}
+header{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+header b{font-size:20px}header .sub{color:var(--mut)}header .sp{flex:1}
+main{max-width:1200px;margin:0 auto;padding:16px;display:grid;gap:14px;grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.full{grid-column:1/-1}
+h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+textarea{width:100%;min-height:80px;background:#0f1216;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+input,select{background:#0f1216;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit}
+input[type=number]{width:90px}
+button{background:var(--acc);color:#111;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font:inherit;font-weight:700}
+button.sec{background:transparent;color:var(--txt);border:1px solid var(--line)}
+button.bad{background:var(--bad);color:#fff}
+button:disabled{opacity:.5;cursor:default}
+label{color:var(--mut);font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.task{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}
+.task .meta{font-size:12.5px;color:var(--mut);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap}
+.pill{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);margin-left:6px;white-space:nowrap}
+.approved,.done,.finished{color:var(--ok)}.failed,.error,.cancelled,.budget{color:var(--bad)}
+.in_progress,.running,.planning,.cancelling{color:var(--acc)}.skipped,.partial,.pending{color:var(--mut)}
+.ev{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;border-bottom:1px dashed var(--line);padding:4px 0;white-space:pre-wrap;word-break:break-word}
+.mut{color:var(--mut)}a{color:var(--info)}
+pre{background:#0f1216;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;max-height:60vh;font-size:12.5px;white-space:pre-wrap;word-break:break-word}
+.files{display:flex;flex-direction:column;gap:2px;max-height:260px;overflow:auto}
+.files a{font-family:ui-monospace,Menlo,monospace;font-size:13px;cursor:pointer}
+#auth{display:none}#auth.on{display:block}
+.err{color:var(--bad);font-size:13.5px;margin-top:8px}
+.live{width:8px;height:8px;border-radius:50%;background:var(--mut);display:inline-block}.live.on{background:var(--ok)}
+@media(max-width:820px){main{grid-template-columns:1fr;padding:10px}header .sub{display:none}button{padding:10px 12px}}
+</style>
+</head>
+<body>
+<header><b>🐝 Kovan</b><span class="sub">Tek prompt, çok ajan · Claude Code + Codex</span><span class="sp"></span>
+<span class="mut" style="font-size:13px"><span id="live" class="live"></span> <span id="livet">bağlı değil</span></span></header>
+<main>
+<div class="card full" id="auth"><h3>Token gerekli</h3>
+<p class="mut" style="margin:0 0 8px">Terminalde <code>kovan dashboard</code> çıktısındaki token'ı yapıştır (veya hazır bağlantıyı aç).</p>
+<div class="row"><input id="tok" type="password" placeholder="API token" style="flex:1;min-width:200px" autocomplete="off"><button id="tokgo">Kaydet</button></div>
+<div class="err" id="autherr"></div></div>
+
+<div class="card full"><h3>Yeni istek</h3>
+<textarea id="p" placeholder="Örn: Kafem için menü ve rezervasyon formu olan bir web sitesi yap, testlerini yaz."></textarea>
+<div class="row">
+<label>Klasör <input id="w" value="kovan-out" style="width:170px" title="Proje kökü altında"></label>
+<label>Bütçe $ <input id="b" type="number" value="5" step="0.5" min="0"></label>
+<label>Paralel <input id="n" type="number" value="3" min="1" max="8"></label>
+<label><input id="m" type="checkbox"> Deneme (mock)</label>
+<label id="yl" hidden><input id="y" type="checkbox"> yolo</label>
+<button id="go">Ajanları çalıştır</button></div>
+<div class="mut" style="font-size:12.5px;margin-top:6px" id="root"></div>
+<div class="err" id="runerr"></div></div>
+
+<div class="card"><h3>Görevler <select id="r" aria-label="Çalışma seç"></select>
+<button class="sec" id="cancel" hidden>İptal et</button><button class="sec" id="resume" hidden>Devam et</button>
+<button class="sec" id="rep" hidden>Rapor</button></h3>
+<div id="sum" class="mut"></div><div id="t" class="mut">Henüz çalışma yok.</div></div>
+<div class="card"><h3>Canlı akış</h3><div id="e" style="max-height:460px;overflow:auto"></div></div>
+<div class="card"><h3>Dosyalar <button class="sec" id="fr">Yenile</button></h3><div class="files" id="files"><span class="mut">–</span></div></div>
+<div class="card"><h3>Ortak hafıza</h3><div id="mem" class="mut">Boş.</div></div>
+<div class="card full" id="viewc" hidden><h3><span id="viewt"></span><button class="sec" id="viewx">Kapat</button><button class="sec" id="viewd">İndir</button></h3><pre id="view"></pre></div>
+</main>
+<script>
+"use strict";
+var $ = function (id) { return document.getElementById(id); };
+var esc = function (s) { return (s == null ? "" : String(s)).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+var TERMINAL = ["finished", "partial", "budget", "cancelled", "error"];
+var TR = { pending: "bekliyor", in_progress: "çalışıyor", done: "bitti", approved: "onaylandı", failed: "başarısız", skipped: "atlandı", cancelled: "iptal", rolled_back: "geri alındı", planning: "planlanıyor", running: "çalışıyor", cancelling: "iptal ediliyor", finished: "tamamlandı", partial: "kısmen", budget: "bütçe doldu", error: "hata" };
+var T = "", cur = "", es = null, timer = null, lastState = null;
+
+function store(k, v) { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} }
+function read(k) { try { return sessionStorage.getItem(k) || ""; } catch (e) { return ""; } }
+(function () {
+  var q = new URLSearchParams(location.search), t = q.get("token");
+  if (t) { T = t; store("kovan_token", t); try { history.replaceState(null, "", location.pathname); } catch (e) {} }
+  else T = read("kovan_token");
+})();
+
+function needAuth(msg) { $("auth").classList.add("on"); $("autherr").textContent = msg || ""; live(false, "token gerekli"); }
+function api(path, opt) {
+  opt = opt || {};
+  var h = { "Authorization": "Bearer " + T };
+  if (opt.body) h["Content-Type"] = "application/json";
+  return fetch(path, { method: opt.method || "GET", headers: h, body: opt.body ? JSON.stringify(opt.body) : undefined })
+    .then(function (r) {
+      if (r.status === 401) { needAuth("Token eksik ya da hatalı."); throw new Error("Token eksik ya da hatalı."); }
+      var ct = r.headers.get("Content-Type") || "";
+      var p = ct.indexOf("json") >= 0 ? r.json() : r.text();
+      return p.then(function (d) { if (!r.ok) throw new Error((d && d.error) || ("HTTP " + r.status)); return d; });
+    });
+}
+function live(on, txt) { $("live").classList.toggle("on", !!on); $("livet").textContent = txt; }
+function dur(a, b) { if (!a) return ""; var s = Math.max(0, Math.round((b || Date.now() / 1000) - a)); return s >= 60 ? Math.floor(s / 60) + " dk " + (s % 60) + " sn" : s + " sn"; }
+
+function render(s) {
+  lastState = s;
+  if (s.server) {
+    $("yl").hidden = !s.server.allow_yolo;
+    $("root").textContent = "Klasörler şu kökün altında oluşturulur: " + s.server.projects_root;
+  }
+  $("r").innerHTML = (s.runs || []).map(function (x) {
+    return '<option value="' + x.id + '"' + (s.run && x.id == s.run.id ? " selected" : "") + ">#" + x.id + " " + esc(String(x.prompt).slice(0, 40)) + "</option>";
+  }).join("");
+  if (!s.run) return;
+  var R = s.run, active = TERMINAL.indexOf(R.status) < 0;
+  cur = String(R.id);
+  $("cancel").hidden = !active || R.status === "cancelling";
+  $("resume").hidden = active || R.status === "finished";
+  $("rep").hidden = false;
+  $("sum").innerHTML = 'Durum: <span class="' + esc(R.status) + '">' + esc(TR[R.status] || R.status) + "</span> · Maliyet $" + (+R.cost).toFixed(3) + (R.budget ? " / $" + R.budget : "") + (R.summary ? " · " + esc(R.summary) : "");
+  var byId = {}; s.tasks.forEach(function (x) { byId[x.id] = x; });
+  $("t").innerHTML = s.tasks.map(function (x) {
+    var deps = (x.depends_on || []).map(function (d) { var dt = byId[d]; return '<span class="' + (dt ? esc(dt.status) : "") + '">#' + d + "</span>"; }).join(", ");
+    return '<div class="task"><b>#' + x.id + " " + esc(x.title) + '</b><span class="pill">' + esc(x.agent) + '</span><span class="pill ' + esc(x.status) + '">' + esc(TR[x.status] || x.status) + "</span>" +
+      '<div class="meta">' + (deps ? "<span>↳ bağımlı: " + deps + "</span>" : "") + "<span>$" + (+x.cost || 0).toFixed(4) + "</span>" +
+      (x.started ? "<span>⏱ " + dur(x.started, x.finished) + "</span>" : "") + (x.attempts > 1 ? "<span>deneme " + x.attempts + "</span>" : "") +
+      (x.commit_sha ? '<a data-diff="' + x.id + '">diff ' + esc(x.commit_sha.slice(0, 8)) + "</a>" : "") + "</div>" +
+      '<div class="mut" style="font-size:13px;margin-top:4px">' + esc(String(x.result || x.detail || "").slice(0, 280)) + "</div>" +
+      (x.review ? '<div style="font-size:12.5px;margin-top:4px">🔍 ' + esc(x.reviewer) + ": " + esc(String(x.review).slice(0, 160)) + "</div>" : "") + "</div>";
+  }).join("") || '<span class="mut">Plan bekleniyor…</span>';
+  $("e").innerHTML = s.events.map(evHtml).join(""); $("e").scrollTop = $("e").scrollHeight;
+  $("mem").innerHTML = s.memory.length ? s.memory.map(function (x) { return '<div class="ev"><b>' + esc(x.key) + "</b> = " + esc(String(x.value).slice(0, 200)) + ' <span class="mut">(' + esc(x.author) + ")</span></div>"; }).join("") : "Boş.";
+  return R;
+}
+function evHtml(v) { return '<div class="ev"><span class="mut">' + new Date(v.ts * 1000).toLocaleTimeString() + "</span> <b>" + esc(v.agent) + "</b> " + esc(v.kind) + " · " + esc(v.message) + "</div>"; }
+
+function load() {
+  return api("/api/state" + (cur ? "?run=" + encodeURIComponent(cur) : "")).then(function (s) {
+    $("auth").classList.remove("on");
+    var R = render(s);
+    if (R) { stream(R); }
+    else live(true, "bağlı");
+    return s;
+  }).catch(function (e) { if (!$("auth").classList.contains("on")) live(false, "motora ulaşılamadı"); $("runerr").textContent = e.message; });
+}
+function soon() { clearTimeout(timer); timer = setTimeout(load, 250); }
+function stream(R) {
+  if (es && es._run === String(R.id)) return;
+  if (es) { es.close(); es = null; }
+  if (TERMINAL.indexOf(R.status) >= 0) { live(true, "bağlı · çalışma bitti"); return; }
+  if (!window.EventSource) { live(true, "bağlı (yoklama)"); setTimeout(load, 2000); return; }
+  var last = (lastState && lastState.events.length) ? lastState.events[lastState.events.length - 1].id : 0;
+  es = new EventSource("/api/events?run=" + R.id + "&after=" + last + "&token=" + encodeURIComponent(T));
+  es._run = String(R.id);
+  es.onopen = function () { live(true, "canlı (SSE)"); };
+  es.onmessage = function (m) { try { $("e").insertAdjacentHTML("beforeend", evHtml(JSON.parse(m.data))); $("e").scrollTop = $("e").scrollHeight; } catch (e) {} soon(); };
+  es.addEventListener("end", function () { es.close(); es = null; live(true, "bağlı · çalışma bitti"); load(); files(); });
+  es.onerror = function () { live(false, "bağlantı koptu, yeniden deneniyor…"); };
+}
+function files() {
+  if (!cur) return;
+  api("/api/files?content=0&run=" + encodeURIComponent(cur)).then(function (list) {
+    $("files").innerHTML = list.length ? list.map(function (f) { return '<a data-file="' + esc(f.path) + '">' + esc(f.path) + ' <span class="mut">(' + f.size + " B)</span></a>"; }).join("") : '<span class="mut">Dosya yok.</span>';
+  }).catch(function () {});
+}
+function show(title, text, name) {
+  $("viewt").textContent = title; $("view").textContent = text; $("viewc").hidden = false; $("viewc").dataset.name = name || "kovan.txt";
+  $("viewc").scrollIntoView({ behavior: "smooth" });
+}
+document.addEventListener("click", function (ev) {
+  var a = ev.target.closest("[data-file],[data-diff]"); if (!a) return;
+  if (a.dataset.file) api("/api/files?run=" + cur + "&path=" + encodeURIComponent(a.dataset.file)).then(function (f) { show(f.path, f.content, f.path.split("/").pop()); }).catch(function (e) { show("Hata", e.message); });
+  else api("/api/runs/" + cur + "/tasks/" + a.dataset.diff + "/diff").then(function (d) { show("Görev #" + a.dataset.diff + " diff", d, "gorev-" + a.dataset.diff + ".diff"); }).catch(function (e) { show("Hata", e.message); });
+});
+$("viewx").onclick = function () { $("viewc").hidden = true; };
+$("viewd").onclick = function () {
+  var u = URL.createObjectURL(new Blob([$("view").textContent], { type: "text/plain" })), a = document.createElement("a");
+  a.href = u; a.download = $("viewc").dataset.name; a.click(); setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+};
+$("tokgo").onclick = function () { T = $("tok").value.trim(); store("kovan_token", T); $("tok").value = ""; load().then(files); };
+$("r").onchange = function () { cur = this.value; if (es) { es.close(); es = null; } load().then(files); };
+$("go").onclick = function () {
+  var body = { prompt: $("p").value, workdir: $("w").value, budget: +$("b").value, workers: +$("n").value, mock: $("m").checked, yolo: $("y").checked };
+  if (!body.prompt.trim()) return;
+  $("runerr").textContent = ""; $("go").disabled = true;
+  api("/api/run", { method: "POST", body: body }).then(function (j) { cur = String(j.run_id); if (es) { es.close(); es = null; } return load(); })
+    .catch(function (e) { $("runerr").textContent = e.message; }).then(function () { $("go").disabled = false; });
+};
+$("cancel").onclick = function () { if (!cur || !confirm("Çalışma #" + cur + " iptal edilsin mi?")) return; api("/api/runs/" + cur + "/cancel", { method: "POST", body: {} }).then(soon).catch(function (e) { $("runerr").textContent = e.message; }); };
+$("resume").onclick = function () { api("/api/runs/" + cur + "/resume", { method: "POST", body: {} }).then(function () { if (es) { es.close(); es = null; } load(); }).catch(function (e) { $("runerr").textContent = e.message; }); };
+$("rep").onclick = function () { api("/api/runs/" + cur + "/report").then(function (md) { show("Rapor · çalışma #" + cur, md, "REPORT.md"); }).catch(function (e) { show("Hata", e.message); }); };
+$("fr").onclick = files;
+if (!T) needAuth(""); else load().then(files);
+</script>
+</body>
+</html>

@@ -145,7 +145,7 @@
               <button class="x-ex" data-kind="todo">Todo uygulaması yap</button>
               <button class="x-ex" data-kind="port">Portfolyo sitesi yap</button>
             </div>
-            <div class="x-row"><button class="x-go" id="run">Ajanları çalıştır</button></div>
+            <div class="x-row"><button class="x-go" id="run">Ajanları çalıştır</button><button class="btn" id="run-cancel" hidden>İptal et</button></div>
           </div>
           <div class="x-grid">
             <div class="x-panel">
@@ -252,7 +252,7 @@
             <ol class="x-cmds">
               <li data-t="Motoru kur"><div class="x-cmd"><code>cd kovan &amp;&amp; pip install -e .</code><button class="btn" data-copy>Kopyala</button></div></li>
               <li data-t="Claude Code ve Codex'i bağla"><div class="x-cmd"><code>kovan connect</code><button class="btn" data-copy>Kopyala</button></div></li>
-              <li data-t="Panoyu ve API'yi başlat"><div class="x-cmd"><code>kovan dashboard</code><button class="btn" data-copy>Kopyala</button></div></li>
+              <li data-t="Panoyu ve API'yi başlat (token'ı yazdırır)"><div class="x-cmd"><code>kovan dashboard</code><button class="btn" data-copy>Kopyala</button></div></li>
             </ol>
           </div>
           <div class="x-panel">
@@ -261,8 +261,12 @@
               <input id="en-url" class="x-in" value="http://localhost:7777" aria-label="Motor adresi" style="flex:1">
               <button class="x-go" id="en-go">Bağlan</button>
             </div>
+            <div class="x-row">
+              <input id="en-token" class="x-in" type="password" placeholder="API token (kovan dashboard çıktısında)" aria-label="API token" autocomplete="off" spellcheck="false" style="flex:1">
+            </div>
             <div class="x-row"><span class="chip" id="en-claude">Claude –</span><span class="chip" id="en-codex">Codex –</span></div>
             <p class="fineprint" id="en-msg" role="status">Bağlı değil; Ajan sekmesi Demo modunda çalışır.</p>
+            <p class="fineprint">Motor yalnızca 127.0.0.1'de dinler ve her istekte token ister. Token yalnızca bu tarayıcıda tutulur.</p>
           </div>
           <div class="x-panel">
             <h2>MCP araçları</h2>
@@ -374,32 +378,79 @@
           }, 200);
         });
 
-        // Engine mode: real agents through the local Kovan engine
+        // Engine mode: real agents through the local Kovan engine (token + SSE)
+        var TERMINAL = ["finished", "partial", "budget", "cancelled", "error"];
+        var ST_TR = { pending: "bekliyor", in_progress: "çalışıyor", done: "bitti", approved: "onaylandı", failed: "başarısız", skipped: "atlandı", cancelled: "iptal", rolled_back: "geri alındı" };
+        function engineFetch(path, opt) {
+          opt = opt || {};
+          var h = { "Authorization": "Bearer " + (K.token || "") };
+          if (opt.body) h["Content-Type"] = "application/json";
+          return fetch(K.engine + path, { method: opt.method || "GET", headers: h, body: opt.body ? JSON.stringify(opt.body) : undefined })
+            .catch(function () { throw new Error("Motora ulaşılamadı. Bilgisayarında “kovan dashboard” açık mı?"); })
+            .then(function (r) {
+              return r.json().catch(function () { return {}; }).then(function (d) {
+                if (r.status === 401) throw new Error("Token hatalı ya da eksik. Motor sekmesine “kovan dashboard” çıktısındaki token'ı yapıştır.");
+                if (r.status === 403) throw new Error((d && d.error) || "Motor bu isteği reddetti (izin yok).");
+                if (!r.ok) throw new Error((d && d.error) || ("Motor hatası: HTTP " + r.status));
+                return d;
+              });
+            });
+        }
         function runEngine(prompt) {
-          var url = K.engine, seen = 0;
+          var url = K.engine, runId = null, es = null, closed = false, refreshT = null;
           state.running = true; $("run").disabled = true; $("run").textContent = "Motor çalışıyor…";
           $("result").hidden = true; $("log").innerHTML = ""; setCost(0);
           $("tasks").innerHTML = '<li class="x-st">Plan bekleniyor…</li>';
-          function done() { $("run").disabled = false; $("run").textContent = "Ajanları çalıştır"; state.running = false; }
-          function poll(id) {
-            fetch(url + "/api/state?run=" + encodeURIComponent(id)).then(function (r) { return r.json(); }).then(function (s) {
-              var run = s.run || {}, tasks = s.tasks || [], evs = s.events || [];
-              setCost(+run.cost || 0);
-              if (tasks.length) $("tasks").innerHTML = tasks.map(function (t) {
-                var a = /codex/i.test(t.agent) ? "codex" : "claude", st = esc(String(t.status || ""));
-                return '<li class="x-task" data-s="' + st + '"><b>' + esc(String(t.title || t.id)) + '</b><span class="x-badge x-badge--' + a + '">' + esc(String(t.agent || a)) + '</span><span class="x-st">' + st + "</span></li>";
-              }).join("");
-              evs.slice(seen).forEach(function (e) { log(String(e.agent || "kovan"), (e.kind ? e.kind + ": " : "") + (e.message || "")); });
-              seen = evs.length;
-              if (run.status === "finished" || run.status === "error") {
-                log("kovan", (run.status === "error" ? "hata: " : "bitti: ") + (run.summary || ""));
-                return loadFiles(id);
-              }
-              setTimeout(poll, 2000, id);
-            }).catch(function () { log("kovan", "durum alınamadı, 2 sn sonra yeniden denenecek"); setTimeout(poll, 2000, id); });
+          function done() {
+            closed = true; if (es) { es.close(); es = null; }
+            $("run").disabled = false; $("run").textContent = "Ajanları çalıştır"; state.running = false;
+            $("run-cancel").hidden = true; $("run-cancel").onclick = null;
+          }
+          function renderState(s) {
+            var run = s.run || {}, tasks = s.tasks || [];
+            setCost(+run.cost || 0);
+            if (tasks.length) $("tasks").innerHTML = tasks.map(function (t) {
+              var a = /codex/i.test(t.agent) ? "codex" : "claude", st = String(t.status || "");
+              var deps = (t.depends_on || []).length ? " ↳ #" + t.depends_on.join(", #") : "";
+              var extra = (ST_TR[st] || st) + (t.cost ? " · $" + (+t.cost).toFixed(3) : "") + deps;
+              return '<li class="x-task" data-s="' + esc(st) + '"><b>#' + esc(String(t.id)) + " " + esc(String(t.title || "")) + '</b><span class="x-badge x-badge--' + a + '">' + esc(String(t.agent || a)) + '</span><span class="x-st">' + esc(extra) + "</span></li>";
+            }).join("");
+            return run;
+          }
+          function refresh() {
+            return engineFetch("/api/state?run=" + encodeURIComponent(runId)).then(renderState);
+          }
+          function finishRun() {
+            refresh().then(function (run) {
+              log("kovan", (run.status === "finished" ? "bitti: " : (run.status || "durdu") + ": ") + (run.summary || ""));
+              loadFiles(runId);
+            }).catch(function (e) { log("kovan", e.message); done(); });
+          }
+          var seen = 0;
+          function poll() {
+            if (closed) return;
+            engineFetch("/api/state?run=" + encodeURIComponent(runId)).then(function (s) {
+              var run = renderState(s), evs = s.events || [];
+              evs.forEach(function (e) { if (e.id > seen) { log(String(e.agent || "kovan"), (e.kind ? e.kind + ": " : "") + (e.message || "")); seen = e.id; } });
+              if (TERMINAL.indexOf(run.status) >= 0) return finishRun();
+              setTimeout(poll, 2000);
+            }).catch(function (e) { log("kovan", e.message + " 2 sn sonra yeniden denenecek."); setTimeout(poll, 2000); });
+          }
+          function stream() {
+            if (!window.EventSource) return poll();
+            es = new EventSource(url + "/api/events?run=" + encodeURIComponent(runId) + "&after=" + seen + "&token=" + encodeURIComponent(K.token || ""));
+            es.onmessage = function (m) {
+              try { var e = JSON.parse(m.data); seen = Math.max(seen, e.id || 0); log(String(e.agent || "kovan"), (e.kind ? e.kind + ": " : "") + (e.message || "")); } catch (x) {}
+              clearTimeout(refreshT); refreshT = setTimeout(function () { refresh().catch(function () {}); }, 250);
+            };
+            es.addEventListener("end", function () { if (es) { es.close(); es = null; } finishRun(); });
+            es.onerror = function () {
+              if (!es || closed) return;
+              if (es.readyState === 2) { es = null; log("kovan", "Canlı akış kesildi, yoklamaya geçiliyor."); poll(); }
+            };
           }
           function loadFiles(id) {
-            fetch(url + "/api/files?run=" + encodeURIComponent(id)).then(function (r) { return r.json(); }).then(function (list) {
+            engineFetch("/api/files?run=" + encodeURIComponent(id)).then(function (list) {
               if (!list || !list.length) return done();
               ed.files = {}; list.forEach(function (f) { ed.files[f.path] = f.content; });
               state.html = ed.inline(false);
@@ -408,13 +459,21 @@
               $("download").href = state.url; $("result").hidden = false;
               ed.open(ed.files["index.html"] != null ? "index.html" : list[0].path); ed.refresh();
               log("kovan", list.length + " dosya Editöre yüklendi"); done();
-            }).catch(function () { log("kovan", "dosyalar alınamadı"); done(); });
+            }).catch(function (e) { log("kovan", "Dosyalar alınamadı: " + e.message); done(); });
           }
-          fetch(url + "/api/run", { method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: prompt, workdir: "./kovan-out", budget: 5, workers: 3, mock: false }) })
-            .then(function (r) { return r.json(); })
-            .then(function (d) { log("kovan", "çalıştırma başladı: " + d.run_id); poll(d.run_id); })
-            .catch(function () { log("kovan", "Motora ulaşılamadı. Motor sekmesinden bağlantıyı kontrol et."); done(); });
+          engineFetch("/api/run", { method: "POST", body: { prompt: prompt, workdir: "studio-" + new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-"), budget: 5, workers: 3, mock: false } })
+            .then(function (d) {
+              runId = d.run_id; log("kovan", "çalıştırma başladı: #" + runId);
+              $("run-cancel").hidden = false; $("run-cancel").disabled = false;
+              $("run-cancel").onclick = function () {
+                $("run-cancel").disabled = true;
+                engineFetch("/api/runs/" + runId + "/cancel", { method: "POST", body: {} })
+                  .then(function () { log("kovan", "iptal istendi"); })
+                  .catch(function (e) { log("kovan", "İptal edilemedi: " + e.message); $("run-cancel").disabled = false; });
+              };
+              stream();
+            })
+            .catch(function (e) { log("kovan", e.message); done(); });
         }
 
         function finish(prompt, kind) {
@@ -660,16 +719,39 @@
         function setMode(url) {
           K.engine = url; $("mode").textContent = url ? "Motor bağlı" : "Demo modu"; $("mode").classList.toggle("chip--solid", !!url);
         }
+        var memToken = "";
+        function saveToken(t) { memToken = t; K.token = t; try { if (window.localStorage) { if (t) localStorage.setItem("kovan_token", t); else localStorage.removeItem("kovan_token"); } } catch (e) {} }
+        try { if (window.localStorage) memToken = localStorage.getItem("kovan_token") || ""; } catch (e) { memToken = ""; }
+        K.token = memToken; if (memToken) $("en-token").value = memToken;
         $("en-go").addEventListener("click", function () {
-          var url = $("en-url").value.trim().replace(/\/+$/, ""), ac = new AbortController(), to = setTimeout(function () { ac.abort(); }, 4000);
+          var url = $("en-url").value.trim().replace(/\/+$/, ""), tok = $("en-token").value.trim(), ac = new AbortController(), to = setTimeout(function () { ac.abort(); }, 4000);
           $("en-go").disabled = true; $("en-msg").textContent = "Bağlanılıyor…";
-          fetch(url + "/api/health", { signal: ac.signal }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (h) {
-            if (!h || !h.ok) throw 0;
-            setChip("en-claude", "Claude", !!h.claude); setChip("en-codex", "Codex", !!h.codex); setMode(url);
-            $("en-msg").textContent = "Bağlandı. Ajan sekmesindeki çalıştırmalar artık bu motorda gerçek ajanlarla yürür.";
-          }).catch(function () {
-            setChip("en-claude", "Claude"); setChip("en-codex", "Codex"); setMode("");
-            $("en-msg").textContent = "Motora ulaşılamadı. Bilgisayarında “kovan dashboard” açık mı, adres doğru mu? Şimdilik Demo modunda devam ediyoruz.";
+          var health = null;
+          fetch(url + "/api/health", { signal: ac.signal }).then(function (r) {
+            if (r.status === 403) throw new Error("origin");
+            if (!r.ok) throw new Error("net");
+            return r.json();
+          }).catch(function (e) { throw e && e.message === "origin" ? e : new Error("net"); }).then(function (h) {
+            if (!h || !h.ok) throw new Error("net");
+            health = h;
+            if (!tok) throw new Error("notoken");
+            return fetch(url + "/api/state?run=0", { headers: { "Authorization": "Bearer " + tok }, signal: ac.signal }).catch(function () { throw new Error("net"); });
+          }).then(function (r) {
+            if (r.status === 401) throw new Error("token");
+            if (r.status === 403) throw new Error("origin");
+            if (!r.ok) throw new Error("net");
+            saveToken(tok);
+            setChip("en-claude", "Claude", !!health.claude); setChip("en-codex", "Codex", !!health.codex); setMode(url);
+            $("en-msg").textContent = "Bağlandı" + (health.version ? " (Kovan " + health.version + ")" : "") + ". Ajan sekmesindeki çalıştırmalar artık bu motorda gerçek ajanlarla yürür.";
+          }).catch(function (e) {
+            var why = e && e.message;
+            setMode("");
+            if (health) { setChip("en-claude", "Claude", !!health.claude); setChip("en-codex", "Codex", !!health.codex); }
+            else { setChip("en-claude", "Claude"); setChip("en-codex", "Codex"); }
+            $("en-msg").textContent = why === "notoken" ? "Motor çalışıyor ama token girilmedi. “kovan dashboard” çıktısındaki token'ı yukarıya yapıştır."
+              : why === "token" ? "Token hatalı. “kovan dashboard” çıktısındaki güncel token'ı yapıştır (ya da “kovan token” komutunu çalıştır)."
+              : why === "origin" ? "Motor bu sayfanın adresine izin vermiyor. KOVAN_ALLOWED_ORIGINS ayarını kontrol et."
+              : "Motora ulaşılamadı. Bilgisayarında “kovan dashboard” açık mı, adres doğru mu? (Başka bir siteden bağlanıyorsan adresini KOVAN_ALLOWED_ORIGINS'e ekle.) Şimdilik Demo modunda devam ediyoruz.";
           }).finally(function () { clearTimeout(to); $("en-go").disabled = false; });
         });
         $("mcp").innerHTML = [["kovan_status", "Görev durumu"], ["kovan_task_list", "Görevleri listele"], ["kovan_task_add", "Görev ekle"], ["kovan_task_update", "Görev güncelle"],
