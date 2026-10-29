@@ -4,7 +4,91 @@
 ![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue)
 ![Lisans](https://img.shields.io/badge/lisans-MIT-green)
 
-**Canlı demo (Kovan Studio):** https://ramiz28615.github.io/new/
+**Canlı uygulama (Kovan Studio):** https://ramiz28615.github.io/new/
+
+> **Kovan Studio 0.3** artık gerçek bir yapay zekâ uygulama oluşturucu (bolt.new / lovable benzeri): kendi API
+> anahtarınla (BYOK) tarayıcıda proje üretir, canlı önizler, düzenler ve GitHub'a yayınlar. Sunucu yok, kurulum yok.
+> Python motoru (aşağıda) ayrıca, kendi bilgisayarında Claude Code + Codex ajanlarını yönetir.
+
+## Kovan Studio (tarayıcıda, BYOK)
+
+### 1 dakikada başla (ücretsiz)
+1. https://openrouter.ai/keys adresinde ücretsiz hesap aç → **Create key** ile bir anahtar (`sk-or-…`) oluştur.
+2. https://ramiz28615.github.io/new/ → **Ayarlar** → Sağlayıcı: *OpenRouter*, anahtarı yapıştır → **Kaydet**.
+   Varsayılan model `openrouter/free` uygun bir ücretsiz modele yönlendirir; **Modelleri getir** + **Yalnızca ücretsiz**
+   ile `:free` modellerden birini de seçebilirsin (ücretsiz modellerin günlük istek sınırı vardır).
+3. **Oluştur** ekranında yaz: *“kafe için rezervasyon sitesi yap”* → **Gönder** (Ctrl/⌘+Enter).
+   Dosyalar akış sırasında ağaçta belirir, önizleme kendiliğinden yenilenir. Sonra *“menüye fotoğraflı kartlar ekle”*
+   gibi takip mesajlarıyla projeyi düzenle: model yalnızca değişen/yeni/silinen dosyaları döner.
+
+Anahtarın yoksa **Projeler → Örnek projeyi aç** ile önizleme, editör, ZIP ve yayın akışlarını deneyebilirsin.
+
+### Sağlayıcılar
+| Sağlayıcı | Anahtar | Not |
+|---|---|---|
+| **OpenRouter** (varsayılan) | https://openrouter.ai/keys | Canlı model listesi `api/v1/models`'tan gelir; ücretsiz filtre, fiyat ve görsel desteği gösterilir. |
+| **Anthropic** | https://console.anthropic.com/settings/keys | Tarayıcıdan doğrudan erişim için `anthropic-dangerous-direct-browser-access: true` başlığı eklenir. |
+| **OpenAI** | https://platform.openai.com/api-keys | Chat Completions (akışlı). OpenAI uyumlu başka servis için taban adres girilebilir. |
+| **Google Gemini** | https://aistudio.google.com/apikey | `streamGenerateContent?alt=sse`, ücretsiz katman. |
+
+Tüm sağlayıcılarda yanıtlar **akışlı** (SSE) gelir; **Durdur** (Esc) üretimi keser. Hatalar Türkçe açıklanır
+(geçersiz anahtar, bakiye, istek sınırı, model bulunamadı, ağ/CORS). Model adları zamanla değişebilir:
+listede yoksa **Modelleri getir** ile güncel listeden seç.
+
+### Proje türleri
+Tür, istekten otomatik algılanır (üst çubuktan elle de seçilebilir); her türün kendi sistem istemi ve şablonları vardır.
+
+| Tür | Çalıştırma / önizleme |
+|---|---|
+| **Web** (HTML/CSS/JS, Tailwind CDN) | Korumalı iframe'de canlı önizleme: mobil/tablet/masaüstü, sayfalar arası bağlantılar, yeni sekmede aç, konsol + **Hatayı düzelt** |
+| **React** (ESM + import map + htm, derleme yok) | Aynı önizleme; göreli ES modül importları `data:` URL'lerine çevrilir |
+| **Python** | Pyodide ile tarayıcıda **çalıştır** ve **testleri çalıştır** (pytest), `requirements.txt` içindeki saf Python paketleri micropip ile kurulur, stdin kutusu `input()`'a satır verir, argüman alanı. GUI (tkinter/pygame/Qt), ağ ve yerel C eklentili paketler desteklenmez. |
+| **Bash / Linux**, **Perl**, **Windows (.bat/.ps1)** | Tarayıcıda çalıştırılamaz — **indir ve çalıştır**: hazır komutlar (kopyala), ZIP, ShellCheck/Perl::Critic/PSScriptAnalyzer tarzı **İncele** (yapay zekâ ile), aldığın hatayı yapıştırıp **Hatayı düzelt**. (Güvenilir, sürümü sabit bir WebPerl CDN'i ya da hafif bir tarayıcı içi Bash bulunmadığı için bu türler bilinçli olarak simüle edilmez.) |
+| **React Native (Expo)** | **Snack'te aç** (Snack'in belgelenmiş `files`/`dependencies` parametreleriyle; telefonda Expo Go ile QR), küçük projeler için gömülü önizleme, isteğe bağlı **EAS Build** iş akışı |
+
+**Python → .exe:** Python projelerinde *“Windows/Linux/macOS .exe/ikili üret”* seçeneği `.github/workflows/build-binaries.yml`
+ekler (PyInstaller, windows/ubuntu/macos matrisi, `actions/upload-artifact`). Projeyi GitHub'a gönderdiğinde Actions
+derler; ikililer çalıştırmanın **Artifacts** bölümünde çıkar. Yayın ekranı çalıştırmanın bağlantısını gösterir.
+
+**EAS Build (Expo):** *EAS Build iş akışı ekle* `.github/workflows/eas-build.yml` ve `eas.json` ekler. Expo hesabında
+(expo.dev → Account settings → Access tokens) bir erişim anahtarı oluşturup GitHub deposunda
+**Settings → Secrets and variables → Actions** altına `EXPO_TOKEN` adıyla eklemen gerekir; iş akışı Android APK derlemesini başlatır.
+
+### Özellikler
+- **Oluşturucu:** solda sohbet, sağda önizleme/terminal + kod; telefonda Sohbet / Önizleme / Kod sekmeleri.
+- **Kod editörü:** CodeMirror 5 (sözdizimi renklendirme; yüklenemezse düz metin), dosya oluştur/yükle/yeniden adlandır/sil, otomatik kayıt, Ctrl/⌘+S.
+- **Projeler:** IndexedDB'de birden çok proje (kullanılamazsa bellek), her yapay zekâ turundan sonra **sürüm**,
+  **Geri al** ve **Geçmiş**ten geri yükleme, çoğalt, sil, **ZIP içe/dışa aktar** (JSZip), şablon galerisi
+  (açılış sayfası, e-ticaret, blog, dashboard, todo, oyun, portfolyo, rezervasyon + React, Python, Bash, Perl, PowerShell, Expo).
+- **Görsel referans:** sohbete görsel ekle/yapıştır (görsel destekli modellere gönderilir), **✨ Geliştir** ile kısa
+  fikri ayrıntılı bir isteğe çevir, token/maliyet tahmini ve gerçek kullanım, **Tekrar dene**, koyu/açık tema, Türkçe/İngilizce arayüz.
+- **Paylaş:** küçük projeler sıkıştırılıp (CompressionStream) bağlantının `#p=` kısmına konur; açan kişi kendi kopyasını görür.
+- **Not Defteri** (Pyodide) ve **Motor** (yerel Kovan motoru) sekmeleri korunmuştur.
+
+### Yayınlama (gerçek)
+**Yayınla** ekranında bir GitHub token'ı gir:
+[klasik token](https://github.com/settings/tokens/new?scopes=repo,workflow&description=Kovan%20Studio) (`repo`, iş akışı
+dosyaları için `workflow`) ya da [ince ayarlı token](https://github.com/settings/personal-access-tokens/new)
+(Administration, Contents, Pages, Workflows: *Read and write*). Studio sırasıyla: depo yoksa oluşturur (`POST /user/repos`),
+tüm dosyaları tek commit olarak gönderir (Git Data API: tree + commit + ref), web projelerinde GitHub Pages'i açar
+(`POST /repos/{o}/{r}/pages`, `main` / kök), derlemeyi yoklar ve canlı adresi gösterir. Yayın geçmişi saklanır.
+Alternatif: **Netlify'a sürükle-bırak için ZIP indir** → https://app.netlify.com/drop.
+
+### Güvenlik
+- API anahtarları ve GitHub token'ı **yalnızca bu tarayıcıda** (localStorage) durur ve **yalnızca** ilgili sağlayıcıya
+  (openrouter.ai, api.anthropic.com, api.openai.com, generativelanguage.googleapis.com) ya da api.github.com'a gönderilir.
+  Kovan'ın sunucusu yoktur. Ortak bilgisayarda **Ayarlar → Anahtarları sil**; harcama limiti olan anahtarlar kullan.
+- Üretilen kod, Studio'dan yalıtılmış (`allow-same-origin` olmadan) korumalı bir iframe'de çalışır; anahtarlarına erişemez.
+  `localStorage` önizlemede proje başına taklit edilir.
+
+### Studio geliştirme
+Derleme adımı yok: `docs/` düz ES modülleri + sürümü sabitlenmiş CDN kütüphaneleri (CodeMirror 5.65.16, JSZip 3.10.1, Pyodide 0.26.4).
+```bash
+python -m http.server -d docs 8000      # http://localhost:8000
+cd tests/js && npm ci && node --test     # akış ayrıştırıcı, sağlayıcılar, önizleme, ZIP, yayın, türler, arayüz testleri
+```
+
+## Kovan motoru (Python, yerel ajanlar)
 
 Tek bir cümle yazarsın; Kovan isteği **bağımlılıkları olan** görevlere böler, **Claude Code** ve **Codex**
 ajanlarına dağıtır, ajanlar paralel çalışır, **birbirinin işini inceler**, onaylanan her görev git'e
@@ -86,7 +170,8 @@ Pano API'si ajanları çalıştırabildiği için kilitlidir. Ayrıntılar: [SEC
 ### Kovan Studio ile bağlanmak
 1. `kovan dashboard` çalıştır; çıktıdaki **token**'ı kopyala.
 2. https://ramiz28615.github.io/new/ → **Motor** sekmesi → adres `http://127.0.0.1:7777`, token'ı yapıştır → **Bağlan**.
-3. Ajan sekmesindeki çalıştırmalar artık gerçek ajanlarla yürür; canlı akış SSE ile gelir, **İptal et** düğmesi çalışmayı durdurur.
+3. Motor sekmesindeki **Motorda çalıştır** paneli gerçek ajanlarla çalışır; canlı akış SSE ile gelir, **İptal et** düğmesi çalışmayı durdurur.
+   Bitince üretilen dosyalar yeni bir Studio projesi olarak açılır (önizle, düzenle, yayınla).
 
 ## HTTP API
 | Yöntem | Yol | Açıklama |
@@ -164,9 +249,13 @@ docker run --rm -p 127.0.0.1:7777:7777 -v kovan-data:/data -v "$PWD/projeler:/pr
 pip install -e ".[dev]"
 ruff check .
 pytest
+cd tests/js && npm ci && node --test   # Kovan Studio testleri
 ```
 
 ## Bilinen sınırlar
+- Studio: Bash/Perl/Windows betikleri tarayıcıda çalışmaz (indir ve çalıştır); Python yalnızca Pyodide'nin desteklediği
+  paketlerle ve GUI'siz çalışır, `input()` yalnızca önceden yazılan stdin satırlarını okur; Expo Snack büyük projelerde
+  URL yerine form ile açılır (en iyi çaba); paylaşım bağlantısı ~60 KB sıkıştırılmış veriyle sınırlıdır.
 - Paralel görevler aynı klasörü paylaşır; bir görevin commit'i o anda çalışan başka bir görevin dosyalarını da
   içerebilir. Görev başına kesin ayrım için `-w 1` kullan.
 - Codex maliyeti çıktıdaki token sayısından **tahmin** edilir; Codex sayıyı yazmazsa maliyet 0 görünür.

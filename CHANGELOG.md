@@ -2,6 +2,38 @@
 
 Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esinlidir; sürümler [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.3.0] - 2026-10-30
+
+### Eklenenler — Kovan Studio gerçek bir yapay zekâ uygulama oluşturucu oldu
+- **BYOK sağlayıcılar:** OpenRouter (varsayılan, canlı model listesi, ücretsiz filtre, fiyat/görsel bilgisi), Anthropic
+  (tarayıcıdan doğrudan erişim başlığı), OpenAI (Chat Completions, OpenAI uyumlu taban adres), Google Gemini
+  (`streamGenerateContent?alt=sse`). Hepsi akışlı (SSE); Türkçe hata açıklamaları (anahtar, bakiye, sınır, model, ağ/CORS).
+- **Oluşturucu ekranı:** sohbet + çalışma alanı, telefonda sekmeli görünüm; `<file path>` / `<delete>` / `<rename>`
+  protokolü için parçalara (etiket ortasından bile) dayanıklı akış ayrıştırıcı; dosyalar akış sırasında ağaçta belirir;
+  takip mesajları mevcut projeyi bağlam olarak gönderir ve yalnızca değişen dosyaları uygular; güçlü sistem istemleri.
+- **Proje türleri** (istekten otomatik algılama + seçici): Web, React (ESM/import map), Python (Pyodide ile çalıştır/test,
+  micropip, stdin, argümanlar), Bash/Linux, Perl, Windows (.bat/.ps1), React Native (Expo Snack ile aç/önizle, EAS Build
+  iş akışı). Bash/Perl/Windows için “indir ve çalıştır” komutları, yapay zekâ ile **İncele** (ShellCheck tarzı) ve
+  yapıştırılan hata çıktısından **Hatayı düzelt**.
+- **Python → .exe/ikili:** PyInstaller ile windows/ubuntu/macos matrisli GitHub Actions iş akışı üretimi; yayınla birlikte
+  çalışır, Actions çalıştırma bağlantısı gösterilir.
+- **Canlı önizleme:** sanal dosya sisteminden korumalı iframe (CSS/JS satır içi, ES modül importları ve görseller `data:` URL),
+  sayfalar arası gezinme, cihaz boyutları, yeni sekmede aç, konsol yakalama ve **Hatayı düzelt**; önizlemede `localStorage` taklidi.
+- **Kod editörü** (CodeMirror 5, düz metin yedeği), dosya oluştur/yükle/yeniden adlandır/sil, Ctrl/⌘+S.
+- **Projeler:** IndexedDB (bellek yedeği), her turda sürüm, Geri al / Geçmiş, çoğalt, sil, ZIP içe/dışa aktar (JSZip),
+  15 şablonluk galeri, anahtarsız denemek için örnek proje.
+- **Gerçek yayın:** GitHub token'ı ile depo oluşturma, Git Data API ile tek commit, GitHub Pages'i açma ve derlemeyi
+  yoklama, canlı adres, yayın geçmişi; Netlify sürükle-bırak için ZIP. Simüle “Yayınlar” sekmesi kaldırıldı.
+- **Ekstralar:** görsel referans (görsel destekli modellere), ✨ Geliştir, token/maliyet tahmini ve gerçek kullanım,
+  Durdur, Tekrar dene, klavye kısayolları, koyu/açık tema, Türkçe/İngilizce arayüz, sıkıştırılmış bağlantıyla paylaşım.
+- **Testler:** `tests/js` altında Node testleri (sağlayıcı akışları stub fetch ile, ayrıştırıcı, düzenle/sil, ZIP, önizleme,
+  GitHub yayın sırası, paylaşım, depolama, tür algılama, Python çalıştırıcı (stub Pyodide), Snack yükü, PyInstaller
+  iş akışı, jsdom ile arayüz uçtan uca); CI'a Node işi eklendi.
+
+### Değişenler
+- Studio, tek dosyalık sayfadan `docs/js/*.js` ES modüllerine bölündü (derleme adımı yok). Not Defteri (Pyodide) ve
+  Motor (yerel motor, token + SSE) korunup kenar menüye taşındı; Motor'da çalıştırma sonuçları Studio projesi olarak açılır.
+
 ## [0.2.0] - 2026-10-30
 
 ### Güvenlik

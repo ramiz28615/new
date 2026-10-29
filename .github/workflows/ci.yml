@@ -33,3 +33,21 @@ jobs:
         run: |
           kovan run "CI deneme" --mock -d "$RUNNER_TEMP/kovan-ci"
           kovan report --stdout
+
+  studio:
+    name: Kovan Studio (Node)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tests/js/package-lock.json
+      - name: Kur
+        run: npm ci --prefix tests/js
+      - name: Sözdizimi
+        run: for f in docs/js/*.js tests/js/*.js; do node --check "$f"; done
+      - name: Testler
+        working-directory: tests/js
+        run: node --test

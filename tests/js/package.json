@@ -1,0 +1,13 @@
+{
+  "name": "kovan-studio-tests",
+  "private": true,
+  "type": "module",
+  "description": "Kovan Studio (docs/) için Node testleri",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1",
+    "jszip": "3.10.1"
+  }
+}

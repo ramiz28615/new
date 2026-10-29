@@ -1,0 +1,181 @@
+// UI strings. Turkish is the default; static Turkish text lives in index.html and is restored from there.
+const TR = {
+  untitled: "Yeni proje", ok: "Tamam", cancel: "Vazgeç", save: "Kaydet", saved: "Kaydedildi", delete: "Sil", create: "Oluştur", open: "Aç",
+  duplicate: "Çoğalt", duplicated: "Proje çoğaltıldı", restore: "Geri yükle", restored: "Sürüm geri yüklendi", retry: "Tekrar dene", remove: "Kaldır",
+  copy: "Kopyala", copied: "Kopyalandı ✓", show: "Göster", hide: "Gizle", free: "ücretsiz", files: "dosya", versions: "sürüm", live: "Canlı", repo: "Depo",
+  "type.auto": "Otomatik", "pane.preview": "Önizleme", "pane.terminal": "Terminal", "pane.run": "Çalıştır", "nav.settings": "Ayarlar",
+  "empty.title": "Ne inşa edelim?", "empty.ready": "Fikrini yaz ya da bir şablon seç. Web sitesi, React, Python, Bash, Perl, PowerShell ya da mobil (Expo) uygulama.",
+  "empty.s1": '<a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a>\'dan ücretsiz bir API anahtarı al (ya da Anthropic, OpenAI, Gemini).',
+  "empty.s2": "Ayarlar'a yapıştır; ücretsiz modeller hazır gelir.", "empty.s3": "Fikrini yaz: “kafe için rezervasyon sitesi yap”.",
+  "empty.setkey": "Anahtar ekle", demo: "Örnek projeyi aç", "demo.name": "Örnek: Kafe rezervasyonu",
+  "demo.msg": "Bu, anahtarsız deneyebileceğin örnek bir proje: iki sayfalı, localStorage'da rezervasyon tutan bir kafe sitesi. Önizlemeyi ve Kod sekmesini incele; anahtar ekledikten sonra “menüye fotoğraflı kartlar ekle” gibi değişiklikler iste.",
+  "ai.updated": "Proje güncellendi.", "attach.alt": "Eklenen görsel", "attach.fail": "Görsel okunamadı.", stopped: "durduruldu",
+  "err.title": "Bir sorun oluştu", "err.title.auth": "API anahtarı geçersiz", "err.title.credit": "Bakiye yetersiz", "err.title.rate": "İstek sınırı aşıldı",
+  "err.title.model": "Model bulunamadı", "err.title.badreq": "İstek reddedildi", "err.title.server": "Sağlayıcı hatası", "err.title.network": "Bağlantı / CORS hatası",
+  "err.title.empty": "Boş yanıt", "err.title.unknown": "Bilinmeyen hata", "err.title.abort": "Durduruldu", "err.title.cors": "CORS hatası",
+  "err.auth": "{p} anahtarını kabul etmedi. Ayarlar'da anahtarı kontrol et (başında/sonunda boşluk olmamalı).",
+  "err.credit": "{p} hesabında yeterli bakiye/kredi yok. Ücretsiz bir model seç (OpenRouter'da “:free” ile bitenler) ya da bakiye yükle.",
+  "err.rate": "Çok sık istek gönderildi ya da ücretsiz model kotası doldu. Biraz bekleyip tekrar dene veya başka bir model seç.",
+  "err.model": "“{m}” modeli bulunamadı ya da bu anahtarla kullanılamıyor. Ayarlar'da “Modelleri getir” ile güncel listeden seç.",
+  "err.badreq": "Sağlayıcı isteği reddetti. Proje çok büyük olabilir, model görselleri desteklemiyor olabilir ya da çıktı token sınırı fazla yüksek olabilir.",
+  "err.server": "{p} şu an yanıt veremiyor (sunucu hatası). Birazdan tekrar dene.",
+  "err.network": "{p} adresine ulaşılamadı. İnternet bağlantını kontrol et; reklam engelleyici ya da şirket ağı tarayıcıdan API çağrısını (CORS) engelliyor olabilir.",
+  "err.empty": "Model boş yanıt döndürdü. Tekrar dene ya da başka bir model seç.", "err.unknown": "Beklenmeyen bir hata oluştu.",
+  "need.key": "Önce Ayarlar'dan bir API anahtarı ekle (OpenRouter'da ücretsiz anahtar alabilirsin).",
+  "vision.no": "Seçili model görselleri desteklemiyor; görsel gönderilmeden devam ediliyor.",
+  "trunc.t": "Yanıt bu dosyanın ortasında kesildi; dosya uygulanmadı.", "trunc.len": "Yanıt çıktı token sınırına takıldı. Ayarlar'dan sınırı artır ya da “devam et” yaz.",
+  "trunc.files": "Yarım kalan dosyalar uygulanmadı: {f}", "enhance.empty": "Önce kısa bir fikir yaz, sonra Geliştir'e bas.",
+  "est.in": "token girdi", "est.total": "toplam", "est.title": "Tahmini istek boyutu (≈4 karakter = 1 token) ve maliyeti; gerçek kullanım yanıtın altında gösterilir.",
+  "ver.manual": "Elle düzenleme", "ver.empty": "Boş proje", "ver.latest": "güncel", "ver.none": "Henüz sürüm yok.",
+  "tree.empty": "Henüz dosya yok", binary: "İkili dosya", "ed.saved": "Kaydedildi", "ed.unsaved": "Kaydediliyor…",
+  "con.empty": "Konsol boş. Önizlemedeki console.log ve hatalar burada görünür.", "pv.nopage": "Sayfa bulunamadı: {p}",
+  "py.exit0": "✓ Bitti (çıkış kodu {c})", "py.exit": "✗ Hata (çıkış kodu {c})", "py.failed": "Hata", "py.ready": "Python hazır",
+  "py.nofiles": "Projede .py dosyası yok.", "py.stopped": "■ Durduruldu", "py.workerfail": "Python çalıştırıcısı başlatılamadı.",
+  "none.shell": "Bash betikleri tarayıcıda güvenli ve gerçekçi şekilde çalıştırılamaz — indir ve çalıştır. Aşağıdaki komutları Linux/macOS terminalinde (Windows'ta WSL) kullan; aldığın hatayı aşağıya yapıştırıp “Hatayı düzelt”e bas.",
+  "none.perl": "Perl tarayıcıda çalıştırılamaz — indir ve çalıştır (güvenilir, sürümü sabitlenmiş bir WebPerl CDN'i yok). Perl, Linux/macOS'ta hazır gelir; Windows için Strawberry Perl kullan.",
+  "none.windows": "Windows betikleri (.ps1/.bat) tarayıcıda çalıştırılamaz — indir ve Windows'ta çalıştır. PowerShell 7 ile Linux/macOS'ta da .ps1 çalıştırabilirsin (pwsh).",
+  "none.nocmd": "Henüz betik yok.", "paste.need": "Önce hata çıktısını yapıştır.",
+  "snack.hint": "Expo Snack, projeni web, iOS ve Android'de (Expo Go ile QR kodu okutarak) çalıştırır. “Snack'te aç” düğmesine bas.",
+  "snack.noapp": "Projede App.js yok.", "snack.post": "Proje büyük olduğu için Snack'e form ile gönderildi; açılmazsa ZIP indirip snack.expo.dev'e yükle.",
+  "snack.toobig": "Proje gömülü önizleme için çok büyük; “Snack'te aç”ı kullan.", "snack.eas": "EAS Build iş akışı eklendi",
+  "snack.easadded": "EAS Build iş akışı ve eas.json eklendi. GitHub deposunda EXPO_TOKEN gizli anahtarını tanımlamayı unutma.",
+  "bin.added": "PyInstaller iş akışı eklendi", "bin.removed": "PyInstaller iş akışı kaldırıldı",
+  "bin.added.long": "PyInstaller iş akışı eklendi. Projeyi GitHub'a gönderdiğinde Actions; Windows (.exe), Linux ve macOS için ikili dosyaları derleyip “Artifacts” olarak sunar.",
+  "f.new": "Yeni dosya", "f.rename": "Yeniden adlandır", "f.delete": "Dosyayı sil", "f.invalid": "Geçersiz dosya yolu.", "f.exists": "Bu adda bir dosya zaten var.",
+  "f.select": "Önce bir dosya seç.", "f.delask": "“{f}” silinsin mi? (Geçmiş'ten geri alabilirsin.)", "f.deleted": "Silindi", "f.renamed": "Yeniden adlandırıldı",
+  "f.big": "{f} 5 MB'tan büyük, atlandı.", "f.uploaded": "{n} dosya yüklendi",
+  nofiles: "Projede henüz dosya yok.", "zip.empty": "ZIP içinde dosya bulunamadı.", "zip.imported": "{n} dosya içe aktarıldı", "zip.fail": "ZIP içe aktarılamadı.",
+  "share.title": "Paylaşım bağlantısı", "share.copied": "Bağlantı panoya kopyalandı. Açan kişi projenin bir kopyasını kendi tarayıcısında görür.",
+  "share.copy": "Bağlantıyı kopyala:", "share.bad": "Paylaşım bağlantısı okunamadı.", "share.loaded": "Paylaşılan proje açıldı.",
+  "store.idb": "Tarayıcıda kalıcı (IndexedDB)", "store.mem": "Yalnızca bu oturum (bellek)", "store.memwarn": "Tarayıcı depolaması kullanılamıyor (gizli mod?). Projeler sekme kapanınca silinir; ZIP olarak indir.",
+  "projects.none": "Henüz proje yok.", "p.delask": "“{n}” projesi ve tüm sürümleri silinsin mi?",
+  "deploy.go": "GitHub Pages'e yayınla", "deploy.push": "GitHub deposuna gönder", "deploy.notoken": "Önce GitHub token'ını gir.",
+  "deploy.ok": "GitHub'a gönderildi.", "deploy.live": "Canlı adres:", "deploy.none": "Henüz yayın yok.", "deploy.forgot": "Token silindi.",
+  "deploy.artifacts": "(ikili dosyalar çalıştırma bitince “Artifacts” bölümünde)", "st.live": "yayında", "st.error": "hata", "st.building": "derleniyor", "st.pushed": "gönderildi",
+  "set.keyhelp.openrouter": 'Ücretsiz anahtar: <a href="{url}" target="_blank" rel="noopener">openrouter.ai/keys</a> → “Create key”. “:free” modeller ücretsizdir (günlük istek sınırı vardır). Varsayılan <code>openrouter/free</code>, uygun ücretsiz modeli otomatik seçer.',
+  "set.keyhelp.anthropic": 'Anahtar: <a href="{url}" target="_blank" rel="noopener">console.anthropic.com</a>. Tarayıcıdan doğrudan erişim için gerekli başlık otomatik eklenir.',
+  "set.keyhelp.openai": 'Anahtar: <a href="{url}" target="_blank" rel="noopener">platform.openai.com/api-keys</a>. OpenAI uyumlu başka bir servis için taban adres girebilirsin.',
+  "set.keyhelp.gemini": 'Ücretsiz katmanlı anahtar: <a href="{url}" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.',
+  "set.models": "{n} model bulundu", "set.nopersist": "Uyarı: tarayıcı depolaması kapalı; ayarlar sekme kapanınca silinir.",
+  "set.clear": "Anahtarları sil", "set.clearask": "Bu tarayıcıdaki tüm yapay zekâ anahtarları ve GitHub token'ı silinsin mi?", "set.cleared": "Anahtarlar silindi.",
+  "fix.msg": "Hatayı düzelt ({n} hata)", "review.msg": "Kodu incele ve düzelt",
+  "tpl.landing": "Açılış sayfası", "tpl.shop": "E-ticaret", "tpl.blog": "Blog", "tpl.dashboard": "Dashboard", "tpl.todo": "Todo uygulaması", "tpl.game": "Oyun",
+  "tpl.portfolio": "Portfolyo", "tpl.reservation": "Rezervasyon", "tpl.kanban": "React Kanban", "tpl.py-cli": "Python CLI", "tpl.py-data": "Python veri analizi",
+  "tpl.bash-backup": "Bash yedekleme", "tpl.perl-log": "Perl log analizi", "tpl.ps-sysinfo": "PowerShell araç", "tpl.rn-habits": "Mobil alışkanlık",
+};
+
+const EN = {
+  untitled: "New project", ok: "OK", cancel: "Cancel", save: "Save", saved: "Saved", delete: "Delete", create: "Create", open: "Open",
+  duplicate: "Duplicate", duplicated: "Project duplicated", restore: "Restore", restored: "Version restored", retry: "Retry", remove: "Remove",
+  copy: "Copy", copied: "Copied ✓", show: "Show", hide: "Hide", free: "free", files: "files", versions: "versions", live: "Live", repo: "Repo",
+  "type.auto": "Auto", "pane.preview": "Preview", "pane.terminal": "Terminal", "pane.run": "Run", "nav.settings": "Settings",
+  "empty.title": "What shall we build?", "empty.ready": "Describe your idea or pick a template: website, React, Python, Bash, Perl, PowerShell or a mobile (Expo) app.",
+  "empty.s1": 'Get a free API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a> (or Anthropic, OpenAI, Gemini).',
+  "empty.s2": "Paste it in Settings; free models are preselected.", "empty.s3": "Describe your idea: “build a booking site for a café”.",
+  "empty.setkey": "Add key", demo: "Open sample project", "demo.name": "Sample: café booking",
+  "demo.msg": "A sample project you can try without a key: a two-page café site that stores bookings in localStorage. Explore Preview and Code; after adding a key, ask for changes.",
+  "ai.updated": "Project updated.", "attach.alt": "Attached image", "attach.fail": "Could not read the image.", stopped: "stopped",
+  "err.title": "Something went wrong", "err.title.auth": "Invalid API key", "err.title.credit": "Insufficient credit", "err.title.rate": "Rate limited",
+  "err.title.model": "Model not found", "err.title.badreq": "Request rejected", "err.title.server": "Provider error", "err.title.network": "Network / CORS error",
+  "err.title.empty": "Empty response", "err.title.unknown": "Unknown error", "err.title.abort": "Stopped", "err.title.cors": "CORS error",
+  "err.auth": "{p} rejected the key. Check it in Settings (no leading/trailing spaces).",
+  "err.credit": "Not enough credit on your {p} account. Pick a free model (OpenRouter “:free”) or top up.",
+  "err.rate": "Too many requests or free-model quota reached. Wait a bit or choose another model.",
+  "err.model": "Model “{m}” was not found or is not available for this key. Use “Fetch models” in Settings.",
+  "err.badreq": "The provider rejected the request. The project may be too large, the model may not support images, or max tokens is too high.",
+  "err.server": "{p} is not responding right now (server error). Try again shortly.",
+  "err.network": "Could not reach {p}. Check your connection; an ad blocker or corporate network may block browser API calls (CORS).",
+  "err.empty": "The model returned an empty response. Retry or choose another model.", "err.unknown": "An unexpected error occurred.",
+  "need.key": "Add an API key in Settings first (OpenRouter offers free keys).",
+  "vision.no": "The selected model does not accept images; sending text only.",
+  "trunc.t": "The response stopped in the middle of this file; it was not applied.", "trunc.len": "The response hit the output token limit. Raise it in Settings or say “continue”.",
+  "trunc.files": "Incomplete files were not applied: {f}", "enhance.empty": "Type a short idea first, then press Enhance.",
+  "est.in": "input tokens", "est.total": "total", "est.title": "Estimated request size (≈4 chars = 1 token) and cost; real usage is shown under each reply.",
+  "ver.manual": "Manual edit", "ver.empty": "Empty project", "ver.latest": "current", "ver.none": "No versions yet.",
+  "tree.empty": "No files yet", binary: "Binary file", "ed.saved": "Saved", "ed.unsaved": "Saving…",
+  "con.empty": "Console is empty. console.log output and errors from the preview appear here.", "pv.nopage": "Page not found: {p}",
+  "py.exit0": "✓ Done (exit code {c})", "py.exit": "✗ Error (exit code {c})", "py.failed": "Error", "py.ready": "Python ready",
+  "py.nofiles": "No .py files in the project.", "py.stopped": "■ Stopped", "py.workerfail": "Could not start the Python runner.",
+  "none.shell": "Bash scripts can't run safely in the browser — download and run. Use the commands below on Linux/macOS (WSL on Windows); paste any error below and press “Fix error”.",
+  "none.perl": "Perl can't run in the browser — download and run (no reliable pinned WebPerl CDN). Perl ships with Linux/macOS; use Strawberry Perl on Windows.",
+  "none.windows": "Windows scripts (.ps1/.bat) can't run in the browser — download and run on Windows. PowerShell 7 (pwsh) also runs .ps1 on Linux/macOS.",
+  "none.nocmd": "No scripts yet.", "paste.need": "Paste the error output first.",
+  "snack.hint": "Expo Snack runs your project on web, iOS and Android (scan the QR code with Expo Go). Press “Open in Snack”.",
+  "snack.noapp": "The project has no App.js.", "snack.post": "The project is large, so it was sent to Snack via a form; if it doesn't open, download the ZIP and import it on snack.expo.dev.",
+  "snack.toobig": "Project too large for the embedded preview; use “Open in Snack”.", "snack.eas": "EAS Build workflow added",
+  "snack.easadded": "EAS Build workflow and eas.json added. Remember to add the EXPO_TOKEN secret in your GitHub repo.",
+  "bin.added": "PyInstaller workflow added", "bin.removed": "PyInstaller workflow removed",
+  "bin.added.long": "PyInstaller workflow added. When you push to GitHub, Actions builds Windows (.exe), Linux and macOS binaries as artifacts.",
+  "f.new": "New file", "f.rename": "Rename", "f.delete": "Delete file", "f.invalid": "Invalid file path.", "f.exists": "A file with that name already exists.",
+  "f.select": "Select a file first.", "f.delask": "Delete “{f}”? (You can undo from History.)", "f.deleted": "Deleted", "f.renamed": "Renamed",
+  "f.big": "{f} is larger than 5 MB, skipped.", "f.uploaded": "{n} file(s) uploaded",
+  nofiles: "The project has no files yet.", "zip.empty": "No files found in the ZIP.", "zip.imported": "{n} files imported", "zip.fail": "Could not import ZIP.",
+  "share.title": "Share link", "share.copied": "Link copied. Whoever opens it gets a copy of the project in their own browser.",
+  "share.copy": "Copy the link:", "share.bad": "Could not read the share link.", "share.loaded": "Shared project opened.",
+  "store.idb": "Persistent (IndexedDB)", "store.mem": "This session only (memory)", "store.memwarn": "Browser storage unavailable (private mode?). Projects vanish when the tab closes; download a ZIP.",
+  "projects.none": "No projects yet.", "p.delask": "Delete project “{n}” and all its versions?",
+  "deploy.go": "Publish to GitHub Pages", "deploy.push": "Push to GitHub repo", "deploy.notoken": "Enter your GitHub token first.",
+  "deploy.ok": "Pushed to GitHub.", "deploy.live": "Live URL:", "deploy.none": "No deploys yet.", "deploy.forgot": "Token removed.",
+  "deploy.artifacts": "(binaries appear under “Artifacts” when the run finishes)", "st.live": "live", "st.error": "error", "st.building": "building", "st.pushed": "pushed",
+  "set.keyhelp.openrouter": 'Free key: <a href="{url}" target="_blank" rel="noopener">openrouter.ai/keys</a> → “Create key”. “:free” models cost nothing (daily limits apply). Default <code>openrouter/free</code> routes to an available free model.',
+  "set.keyhelp.anthropic": 'Key: <a href="{url}" target="_blank" rel="noopener">console.anthropic.com</a>. The header required for direct browser access is added automatically.',
+  "set.keyhelp.openai": 'Key: <a href="{url}" target="_blank" rel="noopener">platform.openai.com/api-keys</a>. You can set a base URL for OpenAI-compatible services.',
+  "set.keyhelp.gemini": 'Free-tier key: <a href="{url}" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.',
+  "set.models": "{n} models found", "set.nopersist": "Warning: browser storage is disabled; settings vanish when the tab closes.",
+  "set.clear": "Delete keys", "set.clearask": "Delete all AI keys and the GitHub token stored in this browser?", "set.cleared": "Keys deleted.",
+  "fix.msg": "Fix error ({n})", "review.msg": "Review and fix the code",
+  "tpl.landing": "Landing page", "tpl.shop": "E-commerce", "tpl.blog": "Blog", "tpl.dashboard": "Dashboard", "tpl.todo": "Todo app", "tpl.game": "Game",
+  "tpl.portfolio": "Portfolio", "tpl.reservation": "Booking", "tpl.kanban": "React Kanban", "tpl.py-cli": "Python CLI", "tpl.py-data": "Python data analysis",
+  "tpl.bash-backup": "Bash backup", "tpl.perl-log": "Perl log analyzer", "tpl.ps-sysinfo": "PowerShell tool", "tpl.rn-habits": "Mobile habits",
+  // static (index.html) strings
+  skip: "Skip to content", "nav.build": "Build", "nav.projects": "Projects", "nav.deploy": "Publish", "nav.notebook": "Notebook", "nav.motor": "Engine",
+  theme: "Theme", "theme.dark": "Dark", "theme.light": "Light", lang: "Language", pname: "Project name", ptype: "Project type", new: "New", undo: "Undo",
+  history: "History", share: "Share", zip: "Download ZIP", publish: "Publish", "pane.chat": "Chat", "pane.code": "Code", "prompt.label": "What do you want to build?",
+  "prompt.ph": "e.g. Build a booking site for my café", attach: "Attach image (reference)", enhance: "Enhance", "enhance.t": "Expand the request with AI",
+  "model.change": "Change model", stop: "Stop", send: "Send", review: "Review", "review.t": "AI code review (ShellCheck/lint style)",
+  "dev.mobile": "Mobile", "dev.tablet": "Tablet", "dev.desktop": "Desktop", refresh: "Refresh", newtab: "Open in new tab", console: "Console", fix: "Fix error", clear: "Clear",
+  "py.run": "Run", "py.test": "Tests", "py.idle": "Python not loaded", "py.stdin": "Input (stdin) — one line per input()", "py.stdin.ph": "Each line goes to one input() call",
+  "py.args": "Command-line arguments (e.g. summary --month 10)", "bin.opt": "Build Windows/Linux/macOS .exe/binaries (GitHub Actions + PyInstaller)",
+  "py.note": "Python runs in the browser with Pyodide (WebAssembly). GUIs (tkinter, pygame, Qt), network access and native C-extension packages are not supported; download the project to run those parts locally.",
+  "snack.open": "Open in Snack", "snack.embed": "Preview here", "snack.err": "Paste the error from Snack here",
+  "snack.note": "For EAS Build, create an access token in your Expo account (expo.dev → Account settings → Access tokens) and add it to your GitHub repo under Settings → Secrets and variables → Actions as EXPO_TOKEN. The workflow starts an Android APK build on every push.",
+  "paste.ph": "Paste the error output…", "paste.t": "Error output you got when running", cmds: "Run on your computer", dlzip: "Download ZIP",
+  "review.lint": "Lint review (ShellCheck style)", "f.upload": "Upload file", "projects.sub": "Your projects are stored in this browser (IndexedDB).",
+  "new.project": "New project", "import.zip": "Import ZIP", templates: "Templates", "deploy.sub": "Push the project to your own GitHub account. Web projects go live on GitHub Pages.",
+  "deploy.gh": "GitHub", "deploy.token": "GitHub token", "deploy.repo": "Repository name",
+  "deploy.tokenhelp": 'Create a token: <a href="https://github.com/settings/tokens/new?scopes=repo,workflow&amp;description=Kovan%20Studio" target="_blank" rel="noopener">classic token (repo + workflow)</a> or a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained token</a> (Administration, Contents, Pages, Workflows: write). The token stays in this browser and is only sent to api.github.com.',
+  "deploy.private": "Private repo (Pages may need a paid plan)", "deploy.forget": "Forget token", "deploy.netlify": "Download ZIP for Netlify drag & drop",
+  "deploy.history": "Deploy history", "col.project": "Project", "col.target": "Target", "col.status": "Status", "col.time": "Time", "col.link": "Link",
+  "sec.warn": "<b>Security:</b> your API keys are stored only in this browser (localStorage) and are sent only to the provider you choose; Kovan has no server. On a shared computer press “Delete keys” when done. Use keys with spending limits.",
+  "set.ai": "AI provider", "set.provider": "Provider", "set.key": "API key", "set.model": "Model", "set.base": "OpenAI-compatible base URL (optional)",
+  "set.fetch": "Fetch models", "set.free": "Free only", "set.search": "Search models…", "set.max": "Max output tokens", "set.temp": "Temperature (empty = default)",
+  "set.ui": "Interface", "set.keys": "Keyboard shortcuts", "k.send": "Send", "k.stop": "Stop generating", "k.save": "Save file", "k.panes": "Chat / Preview / Code", "k.undo": "Back to previous version",
+};
+
+const DICTS = { tr: TR, en: EN };
+let lang = "tr";
+
+export function setLang(l) { lang = DICTS[l] ? l : "tr"; }
+export function getLang() { return lang; }
+export function t(key, vars) {
+  let s = DICTS[lang][key];
+  if (s == null) s = TR[key];
+  if (s == null) s = key;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
+  return s;
+}
+export function hasKey(key) { return DICTS[lang][key] != null || TR[key] != null; }
+
+/** Apply strings to static elements. Turkish originals are cached from the HTML the first time. */
+export function applyI18n(root) {
+  const pick = (el, attr, key, get, set) => {
+    const cacheKey = "i18nOrig" + attr;
+    if (el.dataset[cacheKey] == null) el.dataset[cacheKey] = get();
+    const v = lang === "tr" ? (TR[key] != null && attr !== "Html" && attr !== "Text" ? TR[key] : el.dataset[cacheKey]) : (EN[key] != null ? EN[key] : el.dataset[cacheKey]);
+    set(v);
+  };
+  root.querySelectorAll("[data-i18n]").forEach((el) => pick(el, "Text", el.dataset.i18n, () => el.textContent, (v) => { el.textContent = v; }));
+  root.querySelectorAll("[data-i18n-html]").forEach((el) => pick(el, "Html", el.dataset.i18nHtml, () => el.innerHTML, (v) => { el.innerHTML = v; }));
+  root.querySelectorAll("[data-i18n-ph]").forEach((el) => pick(el, "Ph", el.dataset.i18nPh, () => el.getAttribute("placeholder") || "", (v) => el.setAttribute("placeholder", v)));
+  root.querySelectorAll("[data-i18n-title]").forEach((el) => pick(el, "Title", el.dataset.i18nTitle, () => el.getAttribute("title") || "", (v) => { el.setAttribute("title", v); if (el.hasAttribute("aria-label") && el.classList.contains("icon-btn")) el.setAttribute("aria-label", v); }));
+}

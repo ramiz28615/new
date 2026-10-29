@@ -1,922 +1,375 @@
 <!doctype html>
 <html lang="tr" data-theme="dark">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Kovan Studio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&display=swap"
-    />
-    <link rel="stylesheet" href="hark.css" />
-    <link rel="stylesheet" href="hark-hero.css" />
-    <style>
-      :root { --x-amber: #f5b301; --x-purple: #a78bfa; --x-green: #34d399; }
-      body { margin: 0; }
-      .x-app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; background: var(--fill-primary-on); color: var(--text-primary); font: var(--type-body); }
-      .x-side { border-right: 1px solid var(--stroke-secondary); padding: 20px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; box-sizing: border-box; }
-      .x-brand { font: var(--type-heading); padding: 0 12px 20px; display: flex; align-items: center; gap: 8px; }
-      .x-brand i { width: 14px; height: 14px; background: var(--x-amber); clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
-      .x-nav { all: unset; box-sizing: border-box; min-height: var(--tap); padding: 0 12px; border-radius: var(--r-s); display: flex; align-items: center; gap: 10px; cursor: pointer; font: var(--type-label); color: var(--text-secondary); }
-      .x-nav:hover { background: var(--fill-tertiary); color: var(--text-primary); }
-      .x-nav[aria-current="page"] { background: var(--fill-tertiary); color: var(--x-amber); }
-      .x-nav:focus-visible { outline: 2px solid var(--x-amber); }
-      .x-main { padding: 32px clamp(16px, 4vw, 48px) 48px; min-width: 0; }
-      .x-main h1 { font: var(--type-title); margin: 0 0 4px; }
-      .x-sub { color: var(--text-secondary); margin: 0 0 24px; }
-      .x-panel { background: var(--fill-tertiary); border-radius: var(--r-m); padding: 20px; margin-bottom: 16px; }
-      .x-panel h2 { font: var(--type-label); color: var(--text-secondary); margin: 0 0 12px; }
-      .x-panel textarea { width: 100%; box-sizing: border-box; min-height: 96px; resize: vertical; background: var(--fill-primary-on); color: var(--text-primary); border: 1px solid var(--stroke-primary); border-radius: var(--r-s); padding: 12px; font: var(--type-body); }
-      .x-panel textarea:focus { outline: 2px solid var(--x-amber); outline-offset: 1px; }
-      .x-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
-      .x-ex { all: unset; cursor: pointer; min-height: 36px; padding: 0 14px; border-radius: var(--r-pill); border: 1px solid var(--stroke-primary); font: var(--type-small); display: inline-flex; align-items: center; }
-      .x-ex:hover, .x-ex[aria-pressed="true"] { border-color: var(--x-amber); color: var(--x-amber); }
-      .x-ex:focus-visible { outline: 2px solid var(--x-amber); }
-      .x-go { all: unset; cursor: pointer; min-height: var(--tap); padding: 0 20px; border-radius: var(--r-pill); background: var(--x-amber); color: #1a1400; font: var(--type-label); font-weight: var(--weight-bold); display: inline-flex; align-items: center; }
-      .x-go[disabled] { opacity: .5; cursor: progress; }
-      .x-go:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
-      .x-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-      .x-tasks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-      .x-task { background: var(--fill-primary-on); border: 1px solid var(--stroke-secondary); border-radius: var(--r-s); padding: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; transition: border-color var(--dur-quick) var(--ease-out); }
-      .x-task b { flex: 1; font: var(--type-label); }
-      .x-task[data-s="çalışıyor"] { border-color: var(--x-amber); }
-      .x-task[data-s="onaylandı"] { border-color: var(--x-green); }
-      .x-badge { font: var(--type-tag); padding: 2px 8px; border-radius: var(--r-pill); }
-      .x-badge--claude { background: rgba(167,139,250,.18); color: var(--x-purple); }
-      .x-badge--codex { background: rgba(52,211,153,.16); color: var(--x-green); }
-      .x-st { font: var(--type-caption); color: var(--text-secondary); }
-      .x-task[data-s="çalışıyor"] .x-st { color: var(--x-amber); }
-      .x-task[data-s="onaylandı"] .x-st { color: var(--x-green); }
-      .x-log { background: #0b0b0c; color: #d4d4d4; font: 12px/1.6 "Geist Mono", monospace; border-radius: var(--r-s); padding: 12px; height: 220px; overflow: auto; margin: 0; white-space: pre-wrap; }
-      .x-log .c { color: var(--x-purple); } .x-log .x { color: var(--x-green); } .x-log .k { color: var(--x-amber); }
-      .x-cost { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; }
-      .x-cost strong { font: var(--type-figure); color: var(--x-amber); font-variant-numeric: tabular-nums; }
-      .x-empty { color: var(--text-secondary); padding: 48px 0; }
-      .x-modal { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
-      .x-modal.is-open { display: flex; }
-      .x-modal__box { background: var(--fill-primary-on); border-radius: var(--r-m); width: min(960px, 100%); height: min(85vh, 760px); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--stroke-primary); }
-      .x-modal__bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 8px 8px 16px; font: var(--type-label); }
-      .x-modal iframe { flex: 1; border: 0; background: #fff; }
-      .x-ed { display: grid; grid-template-columns: 170px minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
-      .x-ed .x-panel { padding: 12px; margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-      .x-files { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-      .x-files li { display: flex; align-items: center; border-radius: var(--r-s); }
-      .x-files li[aria-current="true"] { background: var(--fill-primary-on); }
-      .x-files button { all: unset; cursor: pointer; min-height: 36px; padding: 0 8px; font: 12px/1 "Geist Mono", monospace; display: flex; align-items: center; }
-      .x-files .x-fn { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .x-files li[aria-current="true"] .x-fn { color: var(--x-amber); }
-      .x-files .x-del { color: var(--text-secondary); padding: 0 10px; } .x-files .x-del:hover { color: var(--fill-system-red); }
-      .x-files button:focus-visible { outline: 2px solid var(--x-amber); border-radius: var(--r-s); }
-      .x-code { flex: 1; min-height: 520px; resize: none; tab-size: 2; white-space: pre; background: #0b0b0c; color: #d4d4d4; border: 1px solid var(--stroke-secondary); border-radius: var(--r-s); padding: 12px; font: 13px/1.6 "Geist Mono", monospace; }
-      .x-code:focus { outline: 2px solid var(--x-amber); outline-offset: 1px; }
-      .x-stage { flex: 1; min-height: 360px; background: var(--fill-primary-on); border-radius: var(--r-s); overflow: auto; display: flex; justify-content: center; }
-      .x-stage iframe { border: 0; background: #fff; height: 100%; min-height: 360px; max-width: 100%; transition: width var(--dur-quick) var(--ease-out); }
-      .x-con { height: 120px; margin: 0; padding: 8px 12px; font: 12px/1.6 "Geist Mono", monospace; overflow: auto; background: #0b0b0c; color: #d4d4d4; border-radius: var(--r-s); white-space: pre-wrap; }
-      .x-con .e { color: #f87171; } .x-con .w { color: var(--x-amber); }
-      @media (max-width: 1100px) { .x-ed { grid-template-columns: 170px minmax(0, 1fr); } .x-ed > :last-child { grid-column: 1 / -1; } }
-      @media (max-width: 760px) { .x-ed { grid-template-columns: 1fr; } .x-code { min-height: 320px; } }
-      .x-nb { display: grid; gap: 8px; }
-      .x-cell { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px; border: 1px solid var(--stroke-secondary); border-radius: var(--r-s); background: var(--fill-tertiary); }
-      .x-cell:focus-within { border-color: var(--x-amber); }
-      .x-cnt { font: 12px/36px "Geist Mono", monospace; color: var(--text-secondary); text-align: right; }
-      .x-src { width: 100%; box-sizing: border-box; resize: vertical; tab-size: 4; white-space: pre; background: #0b0b0c; color: #d4d4d4; border: 1px solid var(--stroke-secondary); border-radius: var(--r-s); padding: 8px 10px; font: 13px/1.6 "Geist Mono", monospace; }
-      .x-src:focus { outline: none; border-color: var(--stroke-primary); }
-      .x-out:empty { display: none; }
-      .x-out { margin-top: 8px; overflow-x: auto; }
-      .x-out pre { margin: 0; font: 12px/1.6 "Geist Mono", monospace; white-space: pre-wrap; }
-      .x-out .e { color: #f87171; }
-      .x-out img { display: block; max-width: 100%; border-radius: var(--r-s); background: #fff; margin: 4px 0; }
-      .x-out table { border-collapse: collapse; font: 12px/1.5 "Geist Mono", monospace; }
-      .x-out th, .x-out td { padding: 4px 10px; border-bottom: 1px solid var(--stroke-secondary); text-align: right; }
-      .x-md { padding: 4px 6px; cursor: text; border-radius: var(--r-s); }
-      .x-md:focus-visible { outline: 2px solid var(--x-amber); }
-      .x-md h2, .x-md h3, .x-md h4 { margin: 4px 0 8px; } .x-md h2 { font: var(--type-title); } .x-md h3 { font: var(--type-heading); } .x-md h4 { font: var(--type-label); }
-      .x-md p, .x-md ul { margin: 0 0 8px; } .x-md code { font: 13px "Geist Mono", monospace; background: var(--fill-primary-on); padding: 1px 5px; border-radius: 6px; }
-      .x-tools { display: flex; gap: 4px; flex-wrap: wrap; }
-      .x-ib { all: unset; cursor: pointer; min-width: 36px; min-height: 36px; padding: 0 10px; box-sizing: border-box; border-radius: var(--r-s); display: inline-flex; align-items: center; justify-content: center; font: var(--type-small); color: var(--text-secondary); border: 1px solid var(--stroke-secondary); }
-      .x-ib:hover { color: var(--text-primary); border-color: var(--stroke-primary); } .x-ib[data-a="run"] { color: var(--x-amber); } .x-ib[data-a="del"]:hover { color: #f87171; }
-      .x-ib:focus-visible { outline: 2px solid var(--x-amber); }
-      @media (max-width: 760px) { .x-cell { grid-template-columns: 36px minmax(0, 1fr); } .x-tools { grid-column: 2; } }
-      .x-top { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-      .x-in { min-height: var(--tap); box-sizing: border-box; background: var(--fill-primary-on); color: var(--text-primary); border: 1px solid var(--stroke-primary); border-radius: var(--r-s); padding: 0 12px; font: var(--type-body); min-width: 0; }
-      .x-in:focus { outline: 2px solid var(--x-amber); outline-offset: 1px; }
-      .x-main code { font: 13px "Geist Mono", monospace; }
-      .x-acts { display: flex; gap: 6px; flex-wrap: wrap; }
-      .x-cmds { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: c; }
-      .x-cmds li { counter-increment: c; display: grid; gap: 4px; }
-      .x-cmds li::before { content: counter(c) ". " attr(data-t); font: var(--type-label); }
-      .x-cmd { display: flex; align-items: center; gap: 8px; background: #0b0b0c; color: #d4d4d4; border-radius: var(--r-s); padding: 4px 4px 4px 12px; }
-      .x-cmd code { flex: 1; overflow-x: auto; white-space: nowrap; }
-      .x-spark { width: 100%; height: 64px; display: block; color: var(--x-amber); }
-      .x-modal--full { padding: 0; } .x-modal--full .x-modal__box { width: 100%; height: 100%; border-radius: 0; }
-      [hidden] { display: none !important; }
-      @media (max-width: 760px) {
-        .x-app { grid-template-columns: 1fr; }
-        .x-side { position: fixed; bottom: 0; left: 0; right: 0; top: auto; height: auto; flex-direction: row; border-right: 0; border-top: 1px solid var(--stroke-secondary); background: var(--fill-primary-on); padding: 4px; z-index: 40; justify-content: space-around; }
-        .x-brand { display: none; }
-        .x-nav { flex-direction: column; justify-content: center; gap: 2px; padding: 4px; font: var(--type-caption); flex: 1; text-align: center; }
-        .x-main { padding-bottom: 96px; }
-        .x-grid { grid-template-columns: 1fr; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="x-app" id="top">
-      <nav class="x-side" aria-label="Bölümler">
-        <div class="x-brand"><i></i>Kovan Studio</div>
-        <button class="x-nav" data-view="ajan" aria-current="page">Ajan</button>
-        <button class="x-nav" data-view="not">Not Defteri</button>
-        <button class="x-nav" data-view="editor">Editör</button>
-        <button class="x-nav" data-view="yayin">Yayınlar</button>
-        <button class="x-nav" data-view="motor">Motor</button>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kovan Studio · Yapay zekâ uygulama oluşturucu</title>
+  <meta name="description" content="Kovan Studio: tarayıcıda çalışan yapay zekâ uygulama oluşturucu. Kendi API anahtarınla web, React, Python, Bash, Perl, Windows ve React Native projeleri üret, önizle, GitHub'a yayınla.">
+  <meta name="theme-color" content="#0f0f12">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='25,6 75,6 100,50 75,94 25,94 0,50' fill='%23f5b301'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#prompt" data-i18n="skip">İçeriğe geç</a>
+  <div class="app" id="app">
+    <aside class="side" aria-label="Bölümler">
+      <div class="brand"><i aria-hidden="true"></i><span>Kovan Studio</span><small>0.3</small></div>
+      <nav class="nav" id="nav">
+        <button class="nav-btn" data-view="build" aria-current="page"><span aria-hidden="true">✦</span><b data-i18n="nav.build">Oluştur</b></button>
+        <button class="nav-btn" data-view="projects"><span aria-hidden="true">▤</span><b data-i18n="nav.projects">Projeler</b></button>
+        <button class="nav-btn" data-view="deploy"><span aria-hidden="true">⇪</span><b data-i18n="nav.deploy">Yayınla</b></button>
+        <button class="nav-btn" data-view="notebook"><span aria-hidden="true">𝑓</span><b data-i18n="nav.notebook">Not Defteri</b></button>
+        <button class="nav-btn" data-view="motor"><span aria-hidden="true">⚙</span><b data-i18n="nav.motor">Motor</b></button>
+        <button class="nav-btn" data-view="settings"><span aria-hidden="true">☰</span><b data-i18n="nav.settings">Ayarlar</b></button>
       </nav>
-      <main class="x-main">
-        <div class="x-top"><span class="chip" id="mode" role="status">Demo modu</span></div>
-        <section id="view-ajan">
-          <h1>Ajan</h1>
-          <p class="x-sub">Claude ve Codex birlikte çalışır: biri yazar, diğeri inceler.</p>
-          <div class="x-panel">
-            <label for="prompt"><h2>Ne yapmak istiyorsun?</h2></label>
-            <textarea id="prompt" placeholder="Örn. Kafem için rezervasyon sitesi yap"></textarea>
-            <div class="x-row" id="examples">
-              <button class="x-ex" data-kind="rez">Kafem için rezervasyon sitesi yap</button>
-              <button class="x-ex" data-kind="todo">Todo uygulaması yap</button>
-              <button class="x-ex" data-kind="port">Portfolyo sitesi yap</button>
-            </div>
-            <div class="x-row"><button class="x-go" id="run">Ajanları çalıştır</button><button class="btn" id="run-cancel" hidden>İptal et</button></div>
-          </div>
-          <div class="x-grid">
-            <div class="x-panel">
-              <h2>Görevler</h2>
-              <ul class="x-tasks" id="tasks"><li class="x-st">Henüz görev yok.</li></ul>
-              <div class="x-cost"><span class="x-st">Maliyet</span><strong id="cost">$0.00</strong></div>
-              <div class="x-row" id="result" hidden>
-                <span class="chip chip--solid">index.html hazır</span>
-                <button class="btn" id="preview">Önizle</button>
-                <button class="btn" id="toeditor">Editörde aç</button>
-                <a class="btn" id="download" download="index.html" href="#">HTML indir</a>
-              </div>
-            </div>
-            <div class="x-panel">
-              <h2>Canlı kayıt</h2>
-              <pre class="x-log" id="log" aria-live="polite"></pre>
-            </div>
-          </div>
-        </section>
-        <section id="view-not" hidden>
-          <h1>Not Defteri</h1>
-          <p class="x-sub">Tarayıcıda gerçek Python (Pyodide). Shift+Enter hücreyi çalıştırır; metne çift tıklayıp düzenle.</p>
-          <div class="x-row" style="margin:0 0 16px">
-            <button class="btn" id="nb-code">+ Kod</button>
-            <button class="btn" id="nb-md">+ Metin</button>
-            <button class="btn" id="nb-all">Tümünü çalıştır</button>
-            <button class="btn" id="nb-clear">Çıktıları temizle</button>
-            <button class="btn" id="nb-pkg">Paket yükle</button>
-            <button class="btn" id="nb-dl">.ipynb indir</button>
-            <span class="chip" id="pystat" role="status">Python yüklenmedi</span>
-          </div>
-          <div class="x-nb" id="nb"></div>
-        </section>
-        <section id="view-editor" hidden>
-          <h1>Editör</h1>
-          <p class="x-sub">Dosyaları düzenle, önizleme yazarken yenilenir.</p>
-          <div class="x-ed">
-            <div class="x-panel">
-              <h2>Dosyalar</h2>
-              <ul class="x-files" id="files"></ul>
-              <button class="btn" id="newfile">Yeni dosya</button>
-            </div>
-            <div class="x-panel">
-              <h2 id="curname">index.html</h2>
-              <textarea class="x-code" id="code" spellcheck="false" aria-labelledby="curname" aria-describedby="tabhint"></textarea>
-              <p class="fineprint" id="tabhint">Tab 2 boşluk ekler; Esc sonra Tab ile çıkılır.</p>
-            </div>
-            <div class="x-panel">
-              <div class="x-row" style="margin:0">
-                <button class="x-ex" data-w="100%" aria-pressed="true">Masaüstü</button>
-                <button class="x-ex" data-w="768px" aria-pressed="false">Tablet</button>
-                <button class="x-ex" data-w="390px" aria-pressed="false">Mobil</button>
-                <button class="btn" id="eddl">HTML indir</button>
-                <button class="btn" id="ed-pub">Yayınla</button>
-              </div>
-              <div class="x-stage"><iframe id="live" title="Canlı önizleme" sandbox="allow-scripts allow-forms allow-modals" style="width:100%"></iframe></div>
-              <h2 style="margin:0">Konsol</h2>
-              <pre class="x-con" id="con" aria-live="polite"></pre>
-            </div>
-          </div>
-        </section>
-        <section id="view-yayin" hidden>
-          <h1>Yayınlar</h1>
-          <p class="x-sub"><span class="chip">Önizleme ortamı – yayın tarayıcıda simüle edilir</span></p>
-          <div class="x-panel">
-            <h2>Yeni yayın</h2>
-            <div class="x-row" style="margin:0">
-              <select id="dp-env" class="x-in" aria-label="Ortam"><option>Production</option><option>Preview</option></select>
-              <span class="pill">⎇ main</span>
-              <input id="dp-msg" class="x-in" placeholder="Yayın mesajı" aria-label="Yayın mesajı" style="flex:1">
-              <button class="x-go" id="dp-go">Yayınla</button>
-            </div>
-            <pre class="x-log" id="dp-log" style="height:140px;margin-top:12px" aria-live="polite">Editördeki HTML'i yayınlamak için Yayınla'ya bas.</pre>
-          </div>
-          <div class="x-panel">
-            <h2>Dağıtımlar</h2>
-            <div class="table-wrap"><table>
-              <thead><tr><th scope="col">ID</th><th scope="col">Ortam</th><th scope="col">Durum</th><th scope="col">Zaman</th><th scope="col">İşlemler</th></tr></thead>
-              <tbody id="dp-rows"></tbody>
-            </table></div>
-          </div>
-          <div class="x-grid">
-            <div class="x-panel">
-              <h2>Ortam değişkenleri</h2>
-              <div class="table-wrap"><table><thead><tr><th scope="col">Anahtar</th><th scope="col">Değer</th><th scope="col"><span class="x-st">İşlem</span></th></tr></thead><tbody id="ev-rows"></tbody></table></div>
-              <form class="x-row" id="ev-form">
-                <input id="ev-k" class="x-in" placeholder="ANAHTAR" aria-label="Anahtar" style="flex:1">
-                <input id="ev-v" class="x-in" type="password" placeholder="değer" aria-label="Değer" style="flex:1">
-                <button class="btn">Ekle</button>
-              </form>
-            </div>
-            <div class="x-panel">
-              <h2>Ziyaret (simüle)</h2>
-              <div class="x-cost" style="margin:0 0 8px"><span class="x-st">Son 24 saat</span><strong id="sp-total">0</strong></div>
-              <svg class="x-spark" id="spark" viewBox="0 0 240 64" preserveAspectRatio="none" role="img" aria-label="Simüle ziyaret grafiği"></svg>
-            </div>
-          </div>
-        </section>
-        <section id="view-motor" hidden>
-          <h1>Motor</h1>
-          <p class="x-sub">Gerçek Claude Code ve Codex ajanları, Kovan motoruyla kendi bilgisayarında çalışır. Studio yalnızca arayüzdür: kodun ve API anahtarların makinende kalır.</p>
-          <div class="x-panel">
-            <h2>Kurulum</h2>
-            <ol class="x-cmds">
-              <li data-t="Motoru kur"><div class="x-cmd"><code>cd kovan &amp;&amp; pip install -e .</code><button class="btn" data-copy>Kopyala</button></div></li>
-              <li data-t="Claude Code ve Codex'i bağla"><div class="x-cmd"><code>kovan connect</code><button class="btn" data-copy>Kopyala</button></div></li>
-              <li data-t="Panoyu ve API'yi başlat (token'ı yazdırır)"><div class="x-cmd"><code>kovan dashboard</code><button class="btn" data-copy>Kopyala</button></div></li>
-            </ol>
-          </div>
-          <div class="x-panel">
-            <h2>Bağlantı</h2>
-            <div class="x-row" style="margin:0">
-              <input id="en-url" class="x-in" value="http://localhost:7777" aria-label="Motor adresi" style="flex:1">
-              <button class="x-go" id="en-go">Bağlan</button>
-            </div>
-            <div class="x-row">
-              <input id="en-token" class="x-in" type="password" placeholder="API token (kovan dashboard çıktısında)" aria-label="API token" autocomplete="off" spellcheck="false" style="flex:1">
-            </div>
-            <div class="x-row"><span class="chip" id="en-claude">Claude –</span><span class="chip" id="en-codex">Codex –</span></div>
-            <p class="fineprint" id="en-msg" role="status">Bağlı değil; Ajan sekmesi Demo modunda çalışır.</p>
-            <p class="fineprint">Motor yalnızca 127.0.0.1'de dinler ve her istekte token ister. Token yalnızca bu tarayıcıda tutulur.</p>
-          </div>
-          <div class="x-panel">
-            <h2>MCP araçları</h2>
-            <div class="table-wrap"><table>
-              <thead><tr><th scope="col">Araç</th><th scope="col">Ne yapar</th></tr></thead>
-              <tbody id="mcp"></tbody>
-            </table></div>
-          </div>
-        </section>
-      </main>
-      <div class="x-modal" id="modal" role="dialog" aria-modal="true" aria-label="Önizleme">
-        <div class="x-modal__box">
-          <div class="x-modal__bar"><span>Önizleme</span><button class="btn" id="close">Kapat</button></div>
-          <iframe id="frame" title="Oluşturulan site" sandbox="allow-scripts allow-forms allow-modals"></iframe>
-        </div>
+      <div class="side-foot">
+        <button class="icon-btn" id="theme-btn" data-i18n-title="theme" title="Tema" aria-label="Tema değiştir">◐</button>
+        <button class="icon-btn" id="lang-btn" title="Dil / Language" aria-label="Dil / Language">EN</button>
       </div>
-    </div>
-    <script src="hark.js"></script>
-    <script>
-      (function () {
-        var $ = function (id) { return document.getElementById(id); };
-        var state = { kind: "rez", running: false, html: "", url: "" };
+    </aside>
 
-        // Navigation between views
-        document.querySelectorAll(".x-nav").forEach(function (b) {
-          b.addEventListener("click", function () {
-            document.querySelectorAll(".x-nav").forEach(function (o) { o.removeAttribute("aria-current"); });
-            b.setAttribute("aria-current", "page");
-            document.querySelectorAll(".x-main > section").forEach(function (s) { s.hidden = s.id !== "view-" + b.dataset.view; });
-          });
-        });
+    <main class="main">
+      <!-- ================= BUILDER ================= -->
+      <section class="view view-build" id="view-build" aria-label="Oluştur">
+        <header class="topbar">
+          <input class="pname" id="pname" aria-label="Proje adı" data-i18n-ph="pname" placeholder="Proje adı" maxlength="80">
+          <select class="sel sel-sm" id="ptype" aria-label="Proje türü" data-i18n-title="ptype" title="Proje türü"></select>
+          <div class="top-actions">
+            <button class="btn btn-ghost" id="btn-new" data-i18n-title="new" title="Yeni proje"><span aria-hidden="true">＋</span><span class="lbl" data-i18n="new">Yeni</span></button>
+            <button class="btn btn-ghost" id="btn-undo" data-i18n-title="undo" title="Geri al (önceki sürüm)"><span aria-hidden="true">↶</span><span class="lbl" data-i18n="undo">Geri al</span></button>
+            <button class="btn btn-ghost" id="btn-history" aria-haspopup="true" aria-expanded="false" data-i18n-title="history" title="Sürüm geçmişi"><span aria-hidden="true">🕘</span><span class="lbl" data-i18n="history">Geçmiş</span></button>
+            <button class="btn btn-ghost" id="btn-share" data-i18n-title="share" title="Bağlantıyla paylaş"><span aria-hidden="true">🔗</span><span class="lbl" data-i18n="share">Paylaş</span></button>
+            <button class="btn btn-ghost" id="btn-zip" data-i18n-title="zip" title="ZIP indir"><span aria-hidden="true">⤓</span><span class="lbl">ZIP</span></button>
+            <button class="btn btn-primary" id="btn-publish"><span aria-hidden="true">⇪</span><span class="lbl" data-i18n="publish">Yayınla</span></button>
+          </div>
+          <div class="pop" id="hist-pop" hidden role="menu" aria-label="Sürüm geçmişi"></div>
+        </header>
 
-        // Example chips
-        document.querySelectorAll("#examples .x-ex").forEach(function (c) {
-          c.addEventListener("click", function () {
-            document.querySelectorAll("#examples .x-ex").forEach(function (o) { o.setAttribute("aria-pressed", "false"); });
-            c.setAttribute("aria-pressed", "true");
-            state.kind = c.dataset.kind;
-            $("prompt").value = c.textContent;
-          });
-        });
+        <div class="seg" id="mseg" role="tablist" aria-label="Görünüm">
+          <button role="tab" data-pane="chat" aria-selected="true" data-i18n="pane.chat">Sohbet</button>
+          <button role="tab" data-pane="run" aria-selected="false" id="mseg-run" data-i18n="pane.preview">Önizleme</button>
+          <button role="tab" data-pane="code" aria-selected="false" data-i18n="pane.code">Kod</button>
+        </div>
 
-        function guessKind(t) {
-          t = t.toLocaleLowerCase("tr");
-          if (/todo|görev|yapılacak/.test(t)) return "todo";
-          if (/portfolyo|portfolio|özgeçmiş/.test(t)) return "port";
-          if (/rezerv|kafe|restoran|masa/.test(t)) return "rez";
-          return state.kind;
-        }
-        function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+        <div class="split" id="split" data-pane="chat">
+          <!-- chat -->
+          <div class="pane pane-chat" id="pane-chat">
+            <div class="msgs" id="msgs" aria-live="polite"></div>
+            <form class="composer" id="composer" autocomplete="off">
+              <div class="attach-list" id="attach-list" hidden></div>
+              <label class="sr" for="prompt" data-i18n="prompt.label">Ne yapmak istiyorsun?</label>
+              <textarea id="prompt" rows="3" data-i18n-ph="prompt.ph" placeholder="Örn. Kafem için rezervasyon sitesi yap"></textarea>
+              <div class="composer-bar">
+                <button type="button" class="icon-btn" id="btn-attach" data-i18n-title="attach" title="Görsel ekle (referans)" aria-label="Görsel ekle">🖼</button>
+                <input type="file" id="file-img" accept="image/*" multiple hidden>
+                <button type="button" class="btn btn-ghost btn-sm" id="btn-enhance" data-i18n-title="enhance.t" title="İsteği yapay zekâ ile ayrıntılandır">✨ <span data-i18n="enhance">Geliştir</span></button>
+                <button type="button" class="chip chip-btn" id="model-chip" data-i18n-title="model.change" title="Modeli değiştir">—</button>
+                <span class="est" id="est" aria-live="off"></span>
+                <span class="spacer"></span>
+                <button type="button" class="btn btn-danger btn-sm" id="btn-stop" hidden><span aria-hidden="true">■</span> <span data-i18n="stop">Durdur</span></button>
+                <button type="submit" class="btn btn-primary btn-sm" id="btn-send"><span data-i18n="send">Gönder</span> <kbd>⌘↵</kbd></button>
+              </div>
+            </form>
+          </div>
 
-        function log(agent, text) {
-          var cls = agent === "claude" ? "c" : agent === "codex" ? "x" : "k";
-          var t = new Date().toLocaleTimeString("tr-TR");
-          $("log").innerHTML += '<span class="k">' + t + '</span> <span class="' + cls + '">[' + agent + "]</span> " + esc(text) + "\n";
-          $("log").scrollTop = $("log").scrollHeight;
-        }
-        function setCost(v) { $("cost").textContent = "$" + v.toFixed(2); }
-        function setTask(i, s) {
-          var li = $("tasks").children[i];
-          li.dataset.s = s;
-          li.querySelector(".x-st").textContent = s;
-        }
+          <!-- workspace -->
+          <div class="pane pane-work" id="pane-work">
+            <div class="wtabs" role="tablist" aria-label="Çalışma alanı">
+              <button role="tab" class="wtab" id="wt-run" data-w="run" aria-selected="true" data-i18n="pane.preview">Önizleme</button>
+              <button role="tab" class="wtab" id="wt-code" data-w="code" aria-selected="false" data-i18n="pane.code">Kod</button>
+              <span class="spacer"></span>
+              <button class="btn btn-ghost btn-sm" id="btn-review" data-i18n-title="review.t" title="Yapay zekâ ile kod incelemesi (ShellCheck/lint tarzı)">🔍 <span data-i18n="review">İncele</span></button>
+            </div>
 
-        var TASKS = [
-          { name: "İskelet", agent: "claude" },
-          { name: "Arayüz ve stil", agent: "codex" },
-          { name: "Etkileşim ve test", agent: "claude" }
-        ];
+            <div class="wbody" id="w-run">
+              <!-- web/react preview -->
+              <div class="runner" id="run-preview">
+                <div class="toolbar">
+                  <div class="seg seg-inline" role="group" aria-label="Cihaz">
+                    <button data-dev="390" aria-pressed="false" data-i18n="dev.mobile">Mobil</button>
+                    <button data-dev="768" aria-pressed="false" data-i18n="dev.tablet">Tablet</button>
+                    <button data-dev="0" aria-pressed="true" data-i18n="dev.desktop">Masaüstü</button>
+                  </div>
+                  <select class="sel sel-sm" id="pv-page" aria-label="Sayfa"></select>
+                  <span class="spacer"></span>
+                  <button class="icon-btn" id="pv-refresh" data-i18n-title="refresh" title="Yenile" aria-label="Yenile">⟳</button>
+                  <button class="icon-btn" id="pv-open" data-i18n-title="newtab" title="Yeni sekmede aç" aria-label="Yeni sekmede aç">↗</button>
+                </div>
+                <div class="stage" id="stage">
+                  <iframe id="pv-frame" title="Canlı önizleme" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox"></iframe>
+                </div>
+                <div class="console" id="console">
+                  <div class="console-bar">
+                    <button class="console-toggle" id="con-toggle" aria-expanded="true"><span data-i18n="console">Konsol</span> <span class="badge" id="con-count" hidden>0</span></button>
+                    <span class="spacer"></span>
+                    <button class="btn btn-sm btn-warn" id="con-fix" hidden>🛠 <span data-i18n="fix">Hatayı düzelt</span></button>
+                    <button class="btn btn-ghost btn-sm" id="con-clear" data-i18n="clear">Temizle</button>
+                  </div>
+                  <div class="console-body" id="con-body" role="log"></div>
+                </div>
+              </div>
 
-        $("run").addEventListener("click", function () {
-          if (state.running) return;
-          var prompt = $("prompt").value.trim() || "Kafem için rezervasyon sitesi yap";
-          $("prompt").value = prompt;
-          if (K.engine) return runEngine(prompt);
-          var kind = guessKind(prompt);
-          state.running = true;
-          $("run").disabled = true;
-          $("run").textContent = "Çalışıyor…";
-          $("result").hidden = true;
-          $("log").innerHTML = "";
-          setCost(0);
-          $("tasks").innerHTML = TASKS.map(function (t) {
-            return '<li class="x-task" data-s="bekliyor"><b>' + t.name + '</b><span class="x-badge x-badge--' + t.agent + '">' + (t.agent === "claude" ? "Claude" : "Codex") + '</span><span class="x-st">bekliyor</span></li>';
-          }).join("");
+              <!-- python -->
+              <div class="runner" id="run-python" hidden>
+                <div class="toolbar">
+                  <button class="btn btn-primary btn-sm" id="py-run">▶ <span data-i18n="py.run">Çalıştır</span></button>
+                  <button class="btn btn-ghost btn-sm" id="py-test">🧪 <span data-i18n="py.test">Testler</span></button>
+                  <button class="btn btn-danger btn-sm" id="py-stop" hidden>■ <span data-i18n="stop">Durdur</span></button>
+                  <select class="sel sel-sm" id="py-entry" aria-label="Giriş dosyası"></select>
+                  <span class="spacer"></span>
+                  <span class="chip" id="py-status" role="status" data-i18n="py.idle">Python hazır değil</span>
+                </div>
+                <details class="stdin">
+                  <summary data-i18n="py.stdin">Girdi (stdin) — input() için satır satır</summary>
+                  <textarea id="py-stdin" rows="3" class="mono" data-i18n-ph="py.stdin.ph" placeholder="Her satır bir input() çağrısına gider"></textarea>
+                  <input id="py-args" class="input mono" data-i18n-ph="py.args" placeholder="Komut satırı argümanları (örn. ozet --ay 10)">
+                </details>
+                <pre class="term" id="py-term" role="log" aria-live="polite"></pre>
+                <div class="toolbar toolbar-foot">
+                  <button class="btn btn-sm btn-warn" id="py-fix" hidden>🛠 <span data-i18n="fix">Hatayı düzelt</span></button>
+                  <label class="check"><input type="checkbox" id="opt-bin-py"> <span data-i18n="bin.opt">Windows/Linux/macOS .exe/ikili üret (GitHub Actions + PyInstaller)</span></label>
+                  <span class="spacer"></span>
+                  <button class="btn btn-ghost btn-sm" id="py-clear" data-i18n="clear">Temizle</button>
+                </div>
+                <p class="note" data-i18n="py.note">Python, tarayıcıda Pyodide (WebAssembly) ile çalışır. Arayüz (tkinter, pygame, Qt), ağ erişimi ve yerel C eklentili paketler desteklenmez; bunlar için projeyi indirip bilgisayarında çalıştır.</p>
+              </div>
 
-          var other = function (a) { return a === "claude" ? "codex" : "claude"; };
-          var steps = [
-            [0, function () { log("kovan", "plan oluşturuldu: 3 görev"); }],
-            [600, function () { log("claude", "kovan_memory_set stil=modern"); }],
-            [700, function () { log("claude", "kovan_memory_set dil=tr"); }]
-          ];
-          TASKS.forEach(function (t, i) {
-            var files = ["index.html iskeleti yazılıyor", "CSS değişkenleri ve düzen", "olay dinleyicileri + doğrulama"][i];
-            steps.push([600, function () { setTask(i, "çalışıyor"); log(t.agent, "görev başladı: " + t.name); }]);
-            steps.push([900, function () { log(t.agent, files); }]);
-            steps.push([800, function () { log(other(t.agent), "inceleme: " + t.name); }]);
-            steps.push([700, function () { log(other(t.agent), "inceleme: APPROVE"); setTask(i, "onaylandı"); }]);
-          });
-          steps.push([700, function () { log("kovan", "index.html üretildi (" + kind + ")"); finish(prompt, kind); }]);
+              <!-- react native / expo snack -->
+              <div class="runner" id="run-snack" hidden>
+                <div class="toolbar">
+                  <button class="btn btn-primary btn-sm" id="sn-open">📱 <span data-i18n="snack.open">Snack'te aç</span></button>
+                  <button class="btn btn-ghost btn-sm" id="sn-embed" data-i18n="snack.embed">Burada önizle</button>
+                  <button class="btn btn-ghost btn-sm" id="sn-eas" data-i18n="snack.eas">EAS Build iş akışı ekle</button>
+                </div>
+                <div class="stage stage-snack" id="sn-stage"><div class="empty-mini" data-i18n="snack.hint">Expo Snack, projeni web, iOS ve Android'de (Expo Go ile QR kodu okutarak) çalıştırır. “Snack'te aç” düğmesine bas.</div></div>
+                <div class="console">
+                  <div class="console-bar"><span data-i18n="snack.err">Snack'teki hatayı buraya yapıştır</span><span class="spacer"></span><button class="btn btn-sm btn-warn" id="sn-fix">🛠 <span data-i18n="fix">Hatayı düzelt</span></button></div>
+                  <textarea id="sn-errtext" class="mono paste" rows="3" data-i18n-ph="paste.ph" placeholder="Hata çıktısını yapıştır…"></textarea>
+                </div>
+                <p class="note" data-i18n="snack.note">EAS Build için Expo hesabında bir erişim anahtarı oluştur (expo.dev → Account settings → Access tokens) ve GitHub deposunda Settings → Secrets and variables → Actions altına EXPO_TOKEN adıyla ekle. İş akışı her push'ta Android APK derlemesini başlatır.</p>
+              </div>
 
-          var total = steps.reduce(function (s, x) { return s + x[0]; }, 0), elapsed = 0, target = 0.18;
-          var at = 0;
-          steps.forEach(function (st) { at += st[0]; setTimeout(st[1], at); });
-          var tick = setInterval(function () {
-            elapsed += 200;
-            setCost(Math.min(target, target * elapsed / total + Math.random() * 0.003));
-            if (elapsed >= total) { clearInterval(tick); setCost(0.18); }
-          }, 200);
-        });
+              <!-- not runnable in the browser: bash / perl / windows -->
+              <div class="runner" id="run-none" hidden>
+                <div class="notice" id="none-notice"></div>
+                <h3 class="h3" data-i18n="cmds">Bilgisayarında çalıştır</h3>
+                <ol class="cmds" id="none-cmds"></ol>
+                <div class="toolbar">
+                  <button class="btn btn-primary btn-sm" id="none-zip">⤓ <span data-i18n="dlzip">ZIP indir</span></button>
+                  <button class="btn btn-ghost btn-sm" id="none-review">🔍 <span data-i18n="review.lint">Lint incelemesi (ShellCheck tarzı)</span></button>
+                </div>
+                <div class="console">
+                  <div class="console-bar"><span data-i18n="paste.t">Çalıştırınca aldığın hata çıktısı</span><span class="spacer"></span><button class="btn btn-sm btn-warn" id="none-fix">🛠 <span data-i18n="fix">Hatayı düzelt</span></button></div>
+                  <textarea id="none-errtext" class="mono paste" rows="4" data-i18n-ph="paste.ph" placeholder="Hata çıktısını yapıştır…"></textarea>
+                </div>
+              </div>
+            </div>
 
-        // Engine mode: real agents through the local Kovan engine (token + SSE)
-        var TERMINAL = ["finished", "partial", "budget", "cancelled", "error"];
-        var ST_TR = { pending: "bekliyor", in_progress: "çalışıyor", done: "bitti", approved: "onaylandı", failed: "başarısız", skipped: "atlandı", cancelled: "iptal", rolled_back: "geri alındı" };
-        function engineFetch(path, opt) {
-          opt = opt || {};
-          var h = { "Authorization": "Bearer " + (K.token || "") };
-          if (opt.body) h["Content-Type"] = "application/json";
-          return fetch(K.engine + path, { method: opt.method || "GET", headers: h, body: opt.body ? JSON.stringify(opt.body) : undefined })
-            .catch(function () { throw new Error("Motora ulaşılamadı. Bilgisayarında “kovan dashboard” açık mı?"); })
-            .then(function (r) {
-              return r.json().catch(function () { return {}; }).then(function (d) {
-                if (r.status === 401) throw new Error("Token hatalı ya da eksik. Motor sekmesine “kovan dashboard” çıktısındaki token'ı yapıştır.");
-                if (r.status === 403) throw new Error((d && d.error) || "Motor bu isteği reddetti (izin yok).");
-                if (!r.ok) throw new Error((d && d.error) || ("Motor hatası: HTTP " + r.status));
-                return d;
-              });
-            });
-        }
-        function runEngine(prompt) {
-          var url = K.engine, runId = null, es = null, closed = false, refreshT = null;
-          state.running = true; $("run").disabled = true; $("run").textContent = "Motor çalışıyor…";
-          $("result").hidden = true; $("log").innerHTML = ""; setCost(0);
-          $("tasks").innerHTML = '<li class="x-st">Plan bekleniyor…</li>';
-          function done() {
-            closed = true; if (es) { es.close(); es = null; }
-            $("run").disabled = false; $("run").textContent = "Ajanları çalıştır"; state.running = false;
-            $("run-cancel").hidden = true; $("run-cancel").onclick = null;
-          }
-          function renderState(s) {
-            var run = s.run || {}, tasks = s.tasks || [];
-            setCost(+run.cost || 0);
-            if (tasks.length) $("tasks").innerHTML = tasks.map(function (t) {
-              var a = /codex/i.test(t.agent) ? "codex" : "claude", st = String(t.status || "");
-              var deps = (t.depends_on || []).length ? " ↳ #" + t.depends_on.join(", #") : "";
-              var extra = (ST_TR[st] || st) + (t.cost ? " · $" + (+t.cost).toFixed(3) : "") + deps;
-              return '<li class="x-task" data-s="' + esc(st) + '"><b>#' + esc(String(t.id)) + " " + esc(String(t.title || "")) + '</b><span class="x-badge x-badge--' + a + '">' + esc(String(t.agent || a)) + '</span><span class="x-st">' + esc(extra) + "</span></li>";
-            }).join("");
-            return run;
-          }
-          function refresh() {
-            return engineFetch("/api/state?run=" + encodeURIComponent(runId)).then(renderState);
-          }
-          function finishRun() {
-            refresh().then(function (run) {
-              log("kovan", (run.status === "finished" ? "bitti: " : (run.status || "durdu") + ": ") + (run.summary || ""));
-              loadFiles(runId);
-            }).catch(function (e) { log("kovan", e.message); done(); });
-          }
-          var seen = 0;
-          function poll() {
-            if (closed) return;
-            engineFetch("/api/state?run=" + encodeURIComponent(runId)).then(function (s) {
-              var run = renderState(s), evs = s.events || [];
-              evs.forEach(function (e) { if (e.id > seen) { log(String(e.agent || "kovan"), (e.kind ? e.kind + ": " : "") + (e.message || "")); seen = e.id; } });
-              if (TERMINAL.indexOf(run.status) >= 0) return finishRun();
-              setTimeout(poll, 2000);
-            }).catch(function (e) { log("kovan", e.message + " 2 sn sonra yeniden denenecek."); setTimeout(poll, 2000); });
-          }
-          function stream() {
-            if (!window.EventSource) return poll();
-            es = new EventSource(url + "/api/events?run=" + encodeURIComponent(runId) + "&after=" + seen + "&token=" + encodeURIComponent(K.token || ""));
-            es.onmessage = function (m) {
-              try { var e = JSON.parse(m.data); seen = Math.max(seen, e.id || 0); log(String(e.agent || "kovan"), (e.kind ? e.kind + ": " : "") + (e.message || "")); } catch (x) {}
-              clearTimeout(refreshT); refreshT = setTimeout(function () { refresh().catch(function () {}); }, 250);
-            };
-            es.addEventListener("end", function () { if (es) { es.close(); es = null; } finishRun(); });
-            es.onerror = function () {
-              if (!es || closed) return;
-              if (es.readyState === 2) { es = null; log("kovan", "Canlı akış kesildi, yoklamaya geçiliyor."); poll(); }
-            };
-          }
-          function loadFiles(id) {
-            engineFetch("/api/files?run=" + encodeURIComponent(id)).then(function (list) {
-              if (!list || !list.length) return done();
-              ed.files = {}; list.forEach(function (f) { ed.files[f.path] = f.content; });
-              state.html = ed.inline(false);
-              if (state.url) URL.revokeObjectURL(state.url);
-              state.url = URL.createObjectURL(new Blob([state.html], { type: "text/html" }));
-              $("download").href = state.url; $("result").hidden = false;
-              ed.open(ed.files["index.html"] != null ? "index.html" : list[0].path); ed.refresh();
-              log("kovan", list.length + " dosya Editöre yüklendi"); done();
-            }).catch(function (e) { log("kovan", "Dosyalar alınamadı: " + e.message); done(); });
-          }
-          engineFetch("/api/run", { method: "POST", body: { prompt: prompt, workdir: "studio-" + new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-"), budget: 5, workers: 3, mock: false } })
-            .then(function (d) {
-              runId = d.run_id; log("kovan", "çalıştırma başladı: #" + runId);
-              $("run-cancel").hidden = false; $("run-cancel").disabled = false;
-              $("run-cancel").onclick = function () {
-                $("run-cancel").disabled = true;
-                engineFetch("/api/runs/" + runId + "/cancel", { method: "POST", body: {} })
-                  .then(function () { log("kovan", "iptal istendi"); })
-                  .catch(function (e) { log("kovan", "İptal edilemedi: " + e.message); $("run-cancel").disabled = false; });
-              };
-              stream();
-            })
-            .catch(function (e) { log("kovan", e.message); done(); });
-        }
+            <div class="wbody" id="w-code" hidden>
+              <div class="code-wrap">
+                <div class="tree-pane">
+                  <div class="tree-bar">
+                    <button class="icon-btn" id="f-new" data-i18n-title="f.new" title="Yeni dosya" aria-label="Yeni dosya">＋</button>
+                    <button class="icon-btn" id="f-upload" data-i18n-title="f.upload" title="Dosya yükle" aria-label="Dosya yükle">⤒</button>
+                    <input type="file" id="f-upload-input" multiple hidden>
+                    <button class="icon-btn" id="f-rename" data-i18n-title="f.rename" title="Yeniden adlandır" aria-label="Yeniden adlandır">✎</button>
+                    <button class="icon-btn" id="f-delete" data-i18n-title="f.delete" title="Sil" aria-label="Sil">🗑</button>
+                  </div>
+                  <ul class="tree" id="tree" role="listbox" aria-label="Dosyalar"></ul>
+                </div>
+                <div class="editor-pane">
+                  <div class="editor-head"><span id="ed-path" class="mono">—</span><span class="spacer"></span><span class="muted" id="ed-state"></span></div>
+                  <div class="editor-host" id="editor-host"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        function finish(prompt, kind) {
-          state.html = buildSite(prompt, kind);
-          if (state.url) URL.revokeObjectURL(state.url);
-          state.url = URL.createObjectURL(new Blob([state.html], { type: "text/html" }));
-          $("download").href = state.url;
-          $("result").hidden = false;
-          ed.files["index.html"] = state.html;
-          if (ed.cur === "index.html") $("code").value = state.html;
-          ed.render(); ed.refresh();
-          $("run").disabled = false;
-          $("run").textContent = "Ajanları çalıştır";
-          state.running = false;
-        }
+      <!-- ================= PROJECTS ================= -->
+      <section class="view view-page" id="view-projects" hidden>
+        <h1 data-i18n="nav.projects">Projeler</h1>
+        <p class="sub" data-i18n="projects.sub">Projelerin bu tarayıcıda (IndexedDB) saklanır.</p>
+        <div class="toolbar">
+          <button class="btn btn-primary" id="pr-new">＋ <span data-i18n="new.project">Yeni proje</span></button>
+          <button class="btn" id="pr-import">⤒ <span data-i18n="import.zip">ZIP içe aktar</span></button>
+          <input type="file" id="pr-import-input" accept=".zip,application/zip" hidden>
+          <button class="btn" id="pr-demo" data-i18n="demo">Örnek projeyi aç</button>
+          <span class="spacer"></span>
+          <span class="chip" id="store-state"></span>
+        </div>
+        <div class="grid-cards" id="proj-grid"></div>
+        <h2 class="h2" data-i18n="templates">Şablonlar</h2>
+        <div class="grid-cards tpl" id="tpl-grid"></div>
+      </section>
 
-        $("preview").addEventListener("click", function () {
-          $("frame").srcdoc = state.html;
-          $("modal").classList.add("is-open");
-          $("close").focus();
-        });
-        function closeModal() { $("modal").classList.remove("is-open", "x-modal--full"); (state.ret || $("preview")).focus(); state.ret = null; }
-        $("close").addEventListener("click", closeModal);
-        $("modal").addEventListener("click", function (e) { if (e.target === $("modal")) closeModal(); });
-        document.addEventListener("keydown", function (e) { if (e.key === "Escape" && $("modal").classList.contains("is-open")) closeModal(); });
+      <!-- ================= DEPLOY ================= -->
+      <section class="view view-page" id="view-deploy" hidden>
+        <h1 data-i18n="nav.deploy">Yayınla</h1>
+        <p class="sub" data-i18n="deploy.sub">Projeyi kendi GitHub hesabına gönder. Web projeleri GitHub Pages'te canlı yayına alınır.</p>
+        <div class="panel">
+          <h2 class="h2" data-i18n="deploy.gh">GitHub</h2>
+          <div class="form-grid">
+            <label><span data-i18n="deploy.token">GitHub token</span>
+              <input class="input" id="gh-token" type="password" autocomplete="off" spellcheck="false" placeholder="ghp_… / github_pat_…">
+            </label>
+            <label><span data-i18n="deploy.repo">Depo adı</span>
+              <input class="input" id="gh-repo" autocomplete="off" spellcheck="false" placeholder="kafe-rezervasyon">
+            </label>
+          </div>
+          <p class="fine" data-i18n-html="deploy.tokenhelp">Token oluştur: <a href="https://github.com/settings/tokens/new?scopes=repo,workflow&amp;description=Kovan%20Studio" target="_blank" rel="noopener">klasik token (repo + workflow)</a> ya da <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">ince ayarlı token</a> (Administration, Contents, Pages, Workflows: yazma). Token yalnızca bu tarayıcıda saklanır ve yalnızca api.github.com'a gönderilir.</p>
+          <div class="toolbar">
+            <label class="check"><input type="checkbox" id="gh-private"> <span data-i18n="deploy.private">Özel depo (Pages için ücretli plan gerekebilir)</span></label>
+            <label class="check" id="opt-bin-wrap"><input type="checkbox" id="opt-bin"> <span data-i18n="bin.opt">Windows/Linux/macOS .exe/ikili üret (GitHub Actions + PyInstaller)</span></label>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-primary" id="gh-go">⇪ <span id="gh-go-lbl" data-i18n="deploy.go">GitHub'a yayınla</span></button>
+            <button class="btn" id="gh-forget" data-i18n="deploy.forget">Token'ı unut</button>
+            <span class="spacer"></span>
+            <button class="btn" id="dl-netlify">⤓ <span data-i18n="deploy.netlify">Netlify'a sürükle-bırak için ZIP indir</span></button>
+          </div>
+          <pre class="term term-sm" id="gh-log" role="log" aria-live="polite"></pre>
+          <div class="result" id="gh-result" hidden></div>
+        </div>
+        <div class="panel">
+          <h2 class="h2" data-i18n="deploy.history">Yayın geçmişi</h2>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th scope="col" data-i18n="col.project">Proje</th><th scope="col" data-i18n="col.target">Hedef</th><th scope="col" data-i18n="col.status">Durum</th><th scope="col" data-i18n="col.time">Zaman</th><th scope="col" data-i18n="col.link">Bağlantı</th></tr></thead>
+            <tbody id="dp-rows"></tbody>
+          </table></div>
+        </div>
+      </section>
 
-        // Editor: in-memory files, live preview, console
-        var HOOK = "<script>(function(){function s(t,a){try{parent.postMessage({kovan:1,t:t,m:[].map.call(a,function(x){try{return typeof x==='object'?JSON.stringify(x):String(x)}catch(e){return String(x)}}).join(' ')},'*')}catch(e){}}" +
-          "['log','info','warn','error'].forEach(function(k){var o=console[k];console[k]=function(){s(k,arguments);o.apply(console,arguments)}});" +
-          "window.addEventListener('error',function(e){s('error',[e.message+(e.lineno?' (satır '+e.lineno+')':'')])});" +
-          "window.addEventListener('unhandledrejection',function(e){s('error',['Promise: '+e.reason])})})();<\/script>";
-        var ed = { cur: "index.html", timer: 0, files: {
-          "index.html": ['<!doctype html>', '<html lang="tr">', '<head>', '  <meta charset="utf-8">', '  <meta name="viewport" content="width=device-width, initial-scale=1">',
-            '  <title>Kovan Demo</title>', '  <link rel="stylesheet" href="style.css">', '</head>', '<body>', '  <main class="card">', '    <span class="tag">Kovan Studio</span>',
-            '    <h1>Merhaba, dünya</h1>', '    <p>Bu sayfayı düzenle; önizleme yazarken yenilenir.</p>', '    <button id="btn">Tıkla</button>', '    <p id="out">Henüz tıklanmadı</p>',
-            '  </main>', '  <script src="app.js"><\/script>', '</body>', '</html>', ''].join("\n"),
-          "style.css": ['* { box-sizing: border-box; }', 'body {', '  margin: 0; min-height: 100vh; display: grid; place-items: center;', '  font: 16px/1.5 system-ui, sans-serif;',
-            '  background: linear-gradient(135deg, #1c1c1e, #3a2f0b); color: #fff;', '}', '.card {', '  width: min(420px, 90vw); padding: 32px; border-radius: 20px;',
-            '  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);', '}', '.tag { font-size: 12px; color: #f5b301; letter-spacing: .08em; text-transform: uppercase; }',
-            'h1 { margin: 8px 0; font-size: 32px; }', 'button {', '  font: inherit; font-weight: 600; padding: 10px 20px; border: 0; border-radius: 999px;',
-            '  background: #f5b301; color: #1a1400; cursor: pointer;', '}', 'button:active { transform: scale(.97); }', '#out { color: #bbb; }', ''].join("\n"),
-          "app.js": ['let n = 0;', 'const out = document.getElementById("out");', 'document.getElementById("btn").addEventListener("click", () => {', '  n++;',
-            '  out.textContent = n + " kez tıklandı";', '  console.log("tıklama", n);', '});', 'console.log("app.js yüklendi");', ''].join("\n")
-        } };
-        ed.inline = function (hook) {
-          var f = ed.files, h = f["index.html"] || "";
-          h = h.replace(/<link[^>]*href=["']?([\w.\-\/]+\.css)["']?[^>]*>/gi, function (m, n) { return f[n] != null ? "<style>\n" + f[n] + "\n</style>" : m; });
-          h = h.replace(/<script[^>]*\ssrc=["']?([\w.\-\/]+\.js)["']?[^>]*><\/script>/gi, function (m, n) { return f[n] != null ? "<script>\n" + f[n].replace(/<\/script/gi, "<\\/script") + "\n<\/script>" : m; });
-          if (hook) h = /<head[^>]*>/i.test(h) ? h.replace(/<head[^>]*>/i, function (m) { return m + HOOK; }) : HOOK + h;
-          return h;
-        };
-        ed.refresh = function () { $("con").innerHTML = ""; $("live").srcdoc = ed.inline(true); };
-        ed.render = function () {
-          $("files").innerHTML = Object.keys(ed.files).map(function (n) {
-            return '<li' + (n === ed.cur ? ' aria-current="true"' : "") + '><button class="x-fn" data-f="' + esc(n) + '">' + esc(n) + '</button><button class="x-del" data-d="' + esc(n) + '" aria-label="' + esc(n) + ' sil">×</button></li>';
-          }).join("");
-          $("curname").textContent = ed.cur;
-        };
-        ed.open = function (n) { ed.cur = n; $("code").value = ed.files[n]; ed.render(); };
-        $("files").addEventListener("click", function (e) {
-          var b = e.target.closest("button"); if (!b) return;
-          if (b.dataset.f) return ed.open(b.dataset.f);
-          var n = b.dataset.d, keys = Object.keys(ed.files);
-          if (keys.length < 2 || !confirm(n + " silinsin mi?")) return;
-          delete ed.files[n];
-          if (n === ed.cur) ed.open(Object.keys(ed.files)[0]); else ed.render();
-          ed.refresh();
-        });
-        $("newfile").addEventListener("click", function () {
-          var n = (window.prompt("Dosya adı", "yeni.js") || "").trim();
-          if (!n) return;
-          if (!/^[\w.\-]+$/.test(n) || ed.files[n] != null) return alert("Geçersiz ya da var olan dosya adı.");
-          ed.files[n] = ""; ed.open(n); $("code").focus();
-        });
-        function edChanged() { ed.files[ed.cur] = $("code").value; clearTimeout(ed.timer); ed.timer = setTimeout(ed.refresh, 500); }
-        var escPressed = false;
-        $("code").addEventListener("input", edChanged);
-        $("code").addEventListener("keydown", function (e) {
-          if (e.key === "Escape") { escPressed = true; return; }
-          if (e.key === "Tab" && !e.shiftKey && !escPressed) {
-            e.preventDefault();
-            this.setRangeText("  ", this.selectionStart, this.selectionEnd, "end");
-            edChanged();
-          }
-          escPressed = false;
-        });
-        document.querySelectorAll("[data-w]").forEach(function (b) {
-          b.addEventListener("click", function () {
-            document.querySelectorAll("[data-w]").forEach(function (o) { o.setAttribute("aria-pressed", String(o === b)); });
-            $("live").style.width = b.dataset.w;
-          });
-        });
-        window.addEventListener("message", function (e) {
-          if (e.source !== $("live").contentWindow || !e.data || !e.data.kovan) return;
-          var cls = e.data.t === "error" ? "e" : e.data.t === "warn" ? "w" : "";
-          $("con").innerHTML += '<span class="' + cls + '">› ' + esc(String(e.data.m)) + "</span>\n";
-          $("con").scrollTop = $("con").scrollHeight;
-        });
-        $("eddl").addEventListener("click", function () {
-          var url = URL.createObjectURL(new Blob([ed.inline(false)], { type: "text/html" }));
-          var a = document.createElement("a"); a.href = url; a.download = "index.html";
-          document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-        });
-        $("toeditor").addEventListener("click", function () {
-          document.querySelector('.x-nav[data-view="editor"]').click();
-          ed.open("index.html"); $("code").focus();
-        });
-        ed.open("index.html"); ed.refresh();
-        var K = window.Kovan = { ed: ed, state: state, engine: "", esc: esc };
+      <!-- ================= NOTEBOOK (Pyodide) ================= -->
+      <section class="view view-page" id="view-notebook" hidden>
+        <h1 data-i18n="nav.notebook">Not Defteri</h1>
+        <p class="sub">Tarayıcıda gerçek Python (Pyodide). Shift+Enter hücreyi çalıştırır; metne çift tıklayıp düzenle.</p>
+        <div class="toolbar">
+          <button class="btn" id="nb-code">+ Kod</button>
+          <button class="btn" id="nb-md">+ Metin</button>
+          <button class="btn" id="nb-all">Tümünü çalıştır</button>
+          <button class="btn" id="nb-clear">Çıktıları temizle</button>
+          <button class="btn" id="nb-pkg">Paket yükle</button>
+          <button class="btn" id="nb-dl">.ipynb indir</button>
+          <span class="chip" id="pystat" role="status">Python yüklenmedi</span>
+        </div>
+        <div class="x-nb" id="nb"></div>
+      </section>
 
-        // Generated site templates
-        function buildSite(prompt, kind) {
-          var title = esc(prompt);
-          var css = "*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,sans-serif;background:#faf7f2;color:#222}" +
-            "main{max-width:640px;margin:0 auto;padding:40px 20px}h1{font-size:28px;margin:0 0 8px}" +
-            "input,button,select{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid #ccc}" +
-            "button{background:#f5b301;border-color:#f5b301;font-weight:600;cursor:pointer}" +
-            ".err{color:#b42318;font-size:14px;min-height:20px}.ok{background:#e7f6ec;border:1px solid #7cc79a;padding:12px;border-radius:10px}";
-          var body = "", js = "";
-          if (kind === "todo") {
-            css += "form{display:flex;gap:8px}form input{flex:1}ul{list-style:none;padding:0}li{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid #e5e0d8}" +
-              "li span{flex:1}li.done span{text-decoration:line-through;color:#888}li button{background:none;border:0;color:#b42318}";
-            body = '<h1>' + title + '</h1><p id="count"></p><form id="f"><input id="t" placeholder="Yeni görev" aria-label="Yeni görev"><button>Ekle</button></form><ul id="l"></ul>';
-            js = "var items=[{t:'Kahve al',d:false}];var l=document.getElementById('l');" +
-              "function r(){l.innerHTML='';items.forEach(function(it,i){var li=document.createElement('li');if(it.d)li.className='done';" +
-              "var c=document.createElement('input');c.type='checkbox';c.checked=it.d;c.onchange=function(){it.d=c.checked;r()};" +
-              "var s=document.createElement('span');s.textContent=it.t;var x=document.createElement('button');x.textContent='Sil';x.onclick=function(){items.splice(i,1);r()};" +
-              "li.append(c,s,x);l.append(li)});document.getElementById('count').textContent=items.filter(function(i){return!i.d}).length+' açık görev'}" +
-              "document.getElementById('f').onsubmit=function(e){e.preventDefault();var t=document.getElementById('t');if(t.value.trim()){items.push({t:t.value.trim(),d:false});t.value='';r()}};r();";
-          } else if (kind === "port") {
-            css += "header{background:#1c1c1e;color:#fff;padding:56px 20px;text-align:center}header p{color:#f5b301}" +
-              ".g{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.g div{background:#fff;border:1px solid #e5e0d8;border-radius:12px;padding:16px}" +
-              ".g div:hover{border-color:#f5b301}a{color:#a06d00}";
-            body = '<header><h1>' + title + '</h1><p>Tasarımcı ve geliştirici</p></header><main><h2>Projeler</h2><div class="g">' +
-              '<div><h3>Kafe markası</h3><p>Logo ve menü tasarımı.</p></div><div><h3>Mobil uygulama</h3><p>Görev takibi için arayüz.</p></div><div><h3>Web sitesi</h3><p>Hızlı ve erişilebilir site.</p></div></div>' +
-              '<h2>İletişim</h2><p><a href="mailto:merhaba@ornek.com">merhaba@ornek.com</a></p><button id="b">Merhaba de</button><p id="m"></p></main>';
-            js = "document.getElementById('b').onclick=function(){document.getElementById('m').textContent='Teşekkürler! En kısa sürede dönüş yapacağım.'};";
-          } else {
-            css += "form{display:grid;gap:6px}label{font-weight:600;font-size:14px;margin-top:8px}";
-            body = '<h1>' + title + '</h1><p>Masanızı ayırtın, sizi bekliyoruz.</p><form id="f" novalidate>' +
-              '<label for="n">Ad Soyad</label><input id="n"><label for="p">Telefon</label><input id="p" type="tel" placeholder="05xx xxx xx xx">' +
-              '<label for="d">Tarih</label><input id="d" type="date"><label for="s">Kişi sayısı</label><select id="s"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5+</option></select>' +
-              '<p class="err" id="e" role="alert"></p><button>Rezervasyon yap</button></form><div id="ok" class="ok" hidden></div>';
-            js = "document.getElementById('f').onsubmit=function(ev){ev.preventDefault();var g=function(i){return document.getElementById(i).value.trim()};var e=document.getElementById('e');" +
-              "if(g('n').length<2){e.textContent='Lütfen adınızı girin.';return}" +
-              "if(!/^0?5\\d{9}$/.test(g('p').replace(/\\s/g,''))){e.textContent='Geçerli bir cep telefonu girin.';return}" +
-              "if(!g('d')||new Date(g('d'))<new Date(new Date().toDateString())){e.textContent='Bugün veya sonrası için bir tarih seçin.';return}" +
-              "e.textContent='';this.hidden=true;var ok=document.getElementById('ok');ok.hidden=false;" +
-              "ok.textContent='Teşekkürler '+g('n')+'! '+g('d')+' için '+g('s')+' kişilik rezervasyonunuz alındı.'};";
-          }
-          var wrap = kind === "port" ? body : "<main>" + body + "</main>";
-          return '<!doctype html>\n<html lang="tr">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + title +
-            "</title>\n<style>" + css + "</style>\n</head>\n<body>\n" + wrap + "\n<script>" + js + "<\/script>\n</body>\n</html>\n";
-        }
-      })();
-    </script>
-    <script>
-      // Yayınlar (simulated deploys) and Motor (local Kovan engine)
-      (function () {
-        var $ = function (id) { return document.getElementById(id); }, K = window.Kovan, esc = K.esc;
-        var deps = [], shown = null, building = false;
-        var envs = [{ k: "API_URL", v: "https://api.kovan.app" }, { k: "SECRET_KEY", v: "sk_live_4f9a21" }];
-        var visits = Array.from({ length: 24 }, function (_, i) { return 20 + Math.round(10 * Math.sin(i / 3) + Math.random() * 8); });
+      <!-- ================= MOTOR (local Kovan engine) ================= -->
+      <section class="view view-page" id="view-motor" hidden>
+        <h1 data-i18n="nav.motor">Motor</h1>
+        <p class="sub">Gerçek Claude Code ve Codex ajanları, Kovan motoruyla kendi bilgisayarında çalışır. Studio yalnızca arayüzdür: kodun ve API anahtarların makinende kalır.</p>
+        <div class="panel">
+          <h2 class="h2">Kurulum</h2>
+          <ol class="cmds">
+            <li><span>Motoru kur</span><div class="cmd"><code>cd kovan &amp;&amp; pip install -e .</code><button class="btn btn-sm" data-copy>Kopyala</button></div></li>
+            <li><span>Claude Code ve Codex'i bağla</span><div class="cmd"><code>kovan connect</code><button class="btn btn-sm" data-copy>Kopyala</button></div></li>
+            <li><span>Panoyu ve API'yi başlat (token'ı yazdırır)</span><div class="cmd"><code>kovan dashboard</code><button class="btn btn-sm" data-copy>Kopyala</button></div></li>
+          </ol>
+        </div>
+        <div class="panel">
+          <h2 class="h2">Bağlantı</h2>
+          <div class="toolbar">
+            <input id="en-url" class="input grow" value="http://localhost:7777" aria-label="Motor adresi">
+            <button class="btn btn-primary" id="en-go">Bağlan</button>
+          </div>
+          <div class="toolbar">
+            <input id="en-token" class="input grow" type="password" placeholder="API token (kovan dashboard çıktısında)" aria-label="API token" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="toolbar"><span class="chip" id="en-state">Bağlı değil</span><span class="chip" id="en-claude">Claude –</span><span class="chip" id="en-codex">Codex –</span></div>
+          <p class="fine" id="en-msg" role="status">Bağlı değil.</p>
+          <p class="fine">Motor yalnızca 127.0.0.1'de dinler ve her istekte token ister. Token yalnızca bu tarayıcıda tutulur.</p>
+        </div>
+        <div class="panel">
+          <h2 class="h2">Motorda çalıştır (Claude + Codex)</h2>
+          <textarea id="mr-prompt" class="input area" rows="3" placeholder="Örn. Kafem için rezervasyon sitesi yap" aria-label="Motor görevi"></textarea>
+          <div class="toolbar">
+            <label class="check">Bütçe $ <input id="mr-budget" class="input input-xs" type="number" min="0.5" step="0.5" value="5" aria-label="Bütçe"></label>
+            <button class="btn btn-primary" id="mr-run" disabled>Ajanları çalıştır</button>
+            <button class="btn" id="mr-cancel" hidden>İptal et</button>
+            <span class="spacer"></span><span class="muted">Maliyet</span> <strong id="mr-cost">$0.00</strong>
+          </div>
+          <ul class="tasks" id="mr-tasks"><li class="muted">Henüz görev yok.</li></ul>
+          <pre class="term term-sm" id="mr-log" aria-live="polite"></pre>
+          <p class="fine">Bittiğinde üretilen dosyalar yeni bir Studio projesi olarak açılır.</p>
+        </div>
+        <div class="panel">
+          <h2 class="h2">MCP araçları</h2>
+          <div class="table-wrap"><table class="table"><thead><tr><th scope="col">Araç</th><th scope="col">Ne yapar</th></tr></thead><tbody id="mcp"></tbody></table></div>
+        </div>
+      </section>
 
-        function showLog(d) { shown = d; $("dp-log").innerHTML = d.log.join("\n"); }
-        function render() {
-          $("dp-rows").innerHTML = deps.length ? deps.map(function (d) {
-            var b = d.status === "Building" ? " disabled" : "";
-            return '<tr><th scope="row"><code>' + d.id + "</code><small>" + esc(d.msg) + "</small></th><td>" + d.env + '</td><td><span class="chip' + (d.status === "Current" ? " chip--solid" : "") + '">' + d.status +
-              "</span></td><td>" + d.t.toLocaleTimeString("tr-TR") + '</td><td><div class="x-acts"><button class="btn" data-a="visit" data-id="' + d.id + '"' + b + '>Ziyaret et</button><button class="btn" data-a="back" data-id="' + d.id + '"' + (b || (d.status === "Current" ? " disabled" : "")) +
-              '>Geri al</button><button class="btn" data-a="log" data-id="' + d.id + '">Loglar</button></div></td></tr>';
-          }).join("") : '<tr><td colspan="5" class="muted">Henüz yayın yok.</td></tr>';
-        }
-        function makeCurrent(d) { deps.forEach(function (o) { if (o.status === "Current") o.status = "Ready"; }); d.status = "Current"; }
-        function deploy() {
-          if (building) return;
-          building = true; $("dp-go").disabled = true;
-          var html = K.ed.inline(false) || K.state.html, id = "dpl_" + Math.random().toString(16).slice(2, 8);
-          var d = { id: id, env: $("dp-env").value, status: "Building", t: new Date(), html: html, msg: $("dp-msg").value.trim() || "Studio'dan yayın", log: [] };
-          deps.unshift(d); render(); showLog(d);
-          var kb = (new Blob([html]).size / 1024).toFixed(1), t0 = performance.now(), at = 0;
-          var lines = ["main dalı alındı · \u201c" + d.msg + "\u201d", "Bağımlılıklar kuruluyor…", "Derleniyor…", "Optimize ediliyor… (" + kb + " kB)", "Yayında ✓ " + id.replace("_", "-") + ".kovan.app"];
-          lines.forEach(function (l, i) {
-            at += i ? 350 + Math.random() * 650 : 0;
-            setTimeout(function () {
-              var ms = String(Math.round(performance.now() - t0)).padStart(5, " ");
-              d.log.push('<span class="k">' + ms + " ms</span> " + (i === lines.length - 1 ? '<span class="x">' + esc(l) + "</span>" : esc(l)));
-              if (shown === d) showLog(d);
-              if (i < lines.length - 1) return;
-              if (d.env === "Production") makeCurrent(d); else d.status = "Ready";
-              building = false; $("dp-go").disabled = false; $("dp-msg").value = "";
-              visits.push(visits[visits.length - 1] + 6 + Math.round(Math.random() * 12)); visits.shift(); spark(); render();
-            }, at);
-          });
-        }
-        $("dp-go").addEventListener("click", deploy);
-        $("ed-pub").addEventListener("click", function () { document.querySelector('.x-nav[data-view="yayin"]').click(); deploy(); });
-        $("dp-rows").addEventListener("click", function (e) {
-          var b = e.target.closest("button[data-a]"); if (!b) return;
-          var d = deps.find(function (x) { return x.id === b.dataset.id; });
-          if (b.dataset.a === "log") return showLog(d);
-          if (b.dataset.a === "back") { makeCurrent(d); return render(); }
-          K.state.ret = b; $("frame").srcdoc = d.html;
-          $("modal").classList.add("is-open", "x-modal--full"); $("close").focus();
-        });
+      <!-- ================= SETTINGS ================= -->
+      <section class="view view-page" id="view-settings" hidden>
+        <h1 data-i18n="nav.settings">Ayarlar</h1>
+        <div class="warn-box" data-i18n-html="sec.warn"><b>Güvenlik:</b> API anahtarların yalnızca bu tarayıcıda (localStorage) saklanır ve yalnızca seçtiğin sağlayıcıya gönderilir; Kovan'ın sunucusu yoktur. Ortak bir bilgisayardaysan işin bitince “Anahtarları sil”e bas. Harcama limiti olan anahtarlar kullan.</div>
+        <div class="panel">
+          <h2 class="h2" data-i18n="set.ai">Yapay zekâ sağlayıcısı</h2>
+          <div class="form-grid">
+            <label><span data-i18n="set.provider">Sağlayıcı</span><select class="sel" id="s-provider"></select></label>
+            <label><span data-i18n="set.key">API anahtarı</span>
+              <span class="input-group"><input class="input" id="s-key" type="password" autocomplete="off" spellcheck="false"><button class="btn btn-ghost btn-sm" id="s-key-show" type="button" data-i18n="show">Göster</button></span>
+            </label>
+          </div>
+          <p class="fine" id="s-key-help"></p>
+          <div class="form-grid">
+            <label><span data-i18n="set.model">Model</span>
+              <input class="input" id="s-model" list="s-model-list" autocomplete="off" spellcheck="false"><datalist id="s-model-list"></datalist>
+            </label>
+            <label id="s-base-wrap"><span data-i18n="set.base">OpenAI uyumlu taban adres (isteğe bağlı)</span><input class="input" id="s-base" placeholder="https://api.openai.com/v1" spellcheck="false"></label>
+          </div>
+          <div class="toolbar">
+            <button class="btn" id="s-fetch" data-i18n="set.fetch">Modelleri getir</button>
+            <label class="check" id="s-free-wrap"><input type="checkbox" id="s-free" checked> <span data-i18n="set.free">Yalnızca ücretsiz</span></label>
+            <input class="input grow" id="s-search" data-i18n-ph="set.search" placeholder="Modellerde ara…" aria-label="Modellerde ara">
+          </div>
+          <ul class="model-list" id="s-models" role="listbox" aria-label="Modeller"></ul>
+          <div class="form-grid">
+            <label><span data-i18n="set.max">En fazla çıktı token'ı</span><input class="input" id="s-max" type="number" min="1024" step="1024" value="16000"></label>
+            <label><span data-i18n="set.temp">Sıcaklık (boş = varsayılan)</span><input class="input" id="s-temp" type="number" min="0" max="2" step="0.1" placeholder="—"></label>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-primary" id="s-save" data-i18n="save">Kaydet</button>
+            <button class="btn btn-danger" id="s-clear" data-i18n="set.clear">Anahtarları sil</button>
+            <span class="muted" id="s-msg" role="status"></span>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="h2" data-i18n="set.ui">Arayüz</h2>
+          <div class="form-grid">
+            <label><span data-i18n="theme">Tema</span><select class="sel" id="s-theme"><option value="dark" data-i18n="theme.dark">Koyu</option><option value="light" data-i18n="theme.light">Açık</option></select></label>
+            <label><span data-i18n="lang">Dil</span><select class="sel" id="s-lang"><option value="tr">Türkçe</option><option value="en">English</option></select></label>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="h2" data-i18n="set.keys">Klavye kısayolları</h2>
+          <table class="table"><tbody>
+            <tr><th scope="row"><kbd>Ctrl/⌘ + Enter</kbd></th><td data-i18n="k.send">Gönder</td></tr>
+            <tr><th scope="row"><kbd>Esc</kbd></th><td data-i18n="k.stop">Üretimi durdur</td></tr>
+            <tr><th scope="row"><kbd>Ctrl/⌘ + S</kbd></th><td data-i18n="k.save">Dosyayı kaydet</td></tr>
+            <tr><th scope="row"><kbd>Alt + 1 / 2 / 3</kbd></th><td data-i18n="k.panes">Sohbet / Önizleme / Kod</td></tr>
+            <tr><th scope="row"><kbd>Ctrl/⌘ + Shift + Z</kbd></th><td data-i18n="k.undo">Önceki sürüme dön</td></tr>
+          </tbody></table>
+        </div>
+      </section>
+    </main>
+  </div>
 
-        function renderEnv() {
-          $("ev-rows").innerHTML = envs.length ? envs.map(function (e, i) {
-            return '<tr><th scope="row"><code>' + esc(e.k) + '</code></th><td><code aria-label="gizli değer">••••••••</code></td><td><button class="btn" data-del="' + i + '" aria-label="' + esc(e.k) + ' sil">Sil</button></td></tr>';
-          }).join("") : '<tr><td colspan="3" class="muted">Değişken yok.</td></tr>';
-        }
-        $("ev-rows").addEventListener("click", function (e) { var b = e.target.closest("[data-del]"); if (b) { envs.splice(+b.dataset.del, 1); renderEnv(); } });
-        $("ev-form").addEventListener("submit", function (e) {
-          e.preventDefault();
-          var k = $("ev-k").value.trim().toUpperCase(), v = $("ev-v").value;
-          if (!/^[A-Z_][A-Z0-9_]*$/.test(k) || !v) return alert("Geçerli bir anahtar (A-Z, 0-9, _) ve değer gir.");
-          envs = envs.filter(function (x) { return x.k !== k; }); envs.push({ k: k, v: v });
-          $("ev-k").value = $("ev-v").value = ""; renderEnv();
-        });
+  <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <form class="modal-box" id="modal-form" method="dialog">
+      <h2 id="modal-title" class="h2"></h2>
+      <div id="modal-body"></div>
+      <input class="input" id="modal-input" hidden>
+      <div class="toolbar toolbar-end">
+        <button type="button" class="btn" id="modal-cancel" data-i18n="cancel">Vazgeç</button>
+        <button type="submit" class="btn btn-primary" id="modal-ok" data-i18n="ok">Tamam</button>
+      </div>
+    </form>
+  </div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
 
-        function spark() {
-          var max = Math.max.apply(null, visits), min = Math.min.apply(null, visits), r = max - min || 1;
-          var pts = visits.map(function (v, i) { return (i * 240 / 23).toFixed(1) + "," + (60 - (v - min) / r * 54).toFixed(1); }).join(" ");
-          $("spark").innerHTML = '<polygon points="0,64 ' + pts + ' 240,64" fill="currentColor" opacity=".15"/><polyline points="' + pts + '" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>';
-          $("sp-total").textContent = visits.reduce(function (a, b) { return a + b; }, 0).toLocaleString("tr-TR");
-        }
-        render(); renderEnv(); spark();
-
-        // Motor
-        document.querySelectorAll("[data-copy]").forEach(function (b) {
-          b.addEventListener("click", function () {
-            var t = b.previousElementSibling.textContent;
-            var ok = function () { b.textContent = "Kopyalandı ✓"; setTimeout(function () { b.textContent = "Kopyala"; }, 1500); };
-            var fb = function () {
-              var ta = document.createElement("textarea"); ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
-              document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); ok(); } catch (e) {} ta.remove();
-            };
-            if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(ok, fb); else fb();
-          });
-        });
-        function setChip(id, name, on) { $(id).textContent = name + (on == null ? " –" : on ? " ✓" : " ✗"); $(id).classList.toggle("chip--solid", !!on); }
-        function setMode(url) {
-          K.engine = url; $("mode").textContent = url ? "Motor bağlı" : "Demo modu"; $("mode").classList.toggle("chip--solid", !!url);
-        }
-        var memToken = "";
-        function saveToken(t) { memToken = t; K.token = t; try { if (window.localStorage) { if (t) localStorage.setItem("kovan_token", t); else localStorage.removeItem("kovan_token"); } } catch (e) {} }
-        try { if (window.localStorage) memToken = localStorage.getItem("kovan_token") || ""; } catch (e) { memToken = ""; }
-        K.token = memToken; if (memToken) $("en-token").value = memToken;
-        $("en-go").addEventListener("click", function () {
-          var url = $("en-url").value.trim().replace(/\/+$/, ""), tok = $("en-token").value.trim(), ac = new AbortController(), to = setTimeout(function () { ac.abort(); }, 4000);
-          $("en-go").disabled = true; $("en-msg").textContent = "Bağlanılıyor…";
-          var health = null;
-          fetch(url + "/api/health", { signal: ac.signal }).then(function (r) {
-            if (r.status === 403) throw new Error("origin");
-            if (!r.ok) throw new Error("net");
-            return r.json();
-          }).catch(function (e) { throw e && e.message === "origin" ? e : new Error("net"); }).then(function (h) {
-            if (!h || !h.ok) throw new Error("net");
-            health = h;
-            if (!tok) throw new Error("notoken");
-            return fetch(url + "/api/state?run=0", { headers: { "Authorization": "Bearer " + tok }, signal: ac.signal }).catch(function () { throw new Error("net"); });
-          }).then(function (r) {
-            if (r.status === 401) throw new Error("token");
-            if (r.status === 403) throw new Error("origin");
-            if (!r.ok) throw new Error("net");
-            saveToken(tok);
-            setChip("en-claude", "Claude", !!health.claude); setChip("en-codex", "Codex", !!health.codex); setMode(url);
-            $("en-msg").textContent = "Bağlandı" + (health.version ? " (Kovan " + health.version + ")" : "") + ". Ajan sekmesindeki çalıştırmalar artık bu motorda gerçek ajanlarla yürür.";
-          }).catch(function (e) {
-            var why = e && e.message;
-            setMode("");
-            if (health) { setChip("en-claude", "Claude", !!health.claude); setChip("en-codex", "Codex", !!health.codex); }
-            else { setChip("en-claude", "Claude"); setChip("en-codex", "Codex"); }
-            $("en-msg").textContent = why === "notoken" ? "Motor çalışıyor ama token girilmedi. “kovan dashboard” çıktısındaki token'ı yukarıya yapıştır."
-              : why === "token" ? "Token hatalı. “kovan dashboard” çıktısındaki güncel token'ı yapıştır (ya da “kovan token” komutunu çalıştır)."
-              : why === "origin" ? "Motor bu sayfanın adresine izin vermiyor. KOVAN_ALLOWED_ORIGINS ayarını kontrol et."
-              : "Motora ulaşılamadı. Bilgisayarında “kovan dashboard” açık mı, adres doğru mu? (Başka bir siteden bağlanıyorsan adresini KOVAN_ALLOWED_ORIGINS'e ekle.) Şimdilik Demo modunda devam ediyoruz.";
-          }).finally(function () { clearTimeout(to); $("en-go").disabled = false; });
-        });
-        $("mcp").innerHTML = [["kovan_status", "Görev durumu"], ["kovan_task_list", "Görevleri listele"], ["kovan_task_add", "Görev ekle"], ["kovan_task_update", "Görev güncelle"],
-          ["kovan_memory_set", "Hafızaya yaz"], ["kovan_memory_get", "Hafızadan oku"], ["kovan_memory_search", "Hafızada ara"], ["kovan_review_submit", "İnceleme gönder"], ["kovan_log", "Panoya not"]]
-          .map(function (r) { return '<tr><th scope="row"><code>' + r[0] + "</code></th><td>" + r[1] + "</td></tr>"; }).join("");
-      })();
-    </script>
-    <script>
-      // Not Defteri: real Python via Pyodide, loaded on first open
-      (function () {
-        var $ = function (id) { return document.getElementById(id); };
-        var nb = $("nb"), py = null, booting = null, count = 0, cur = null, queue = Promise.resolve();
-        var PRELUDE = [
-          "import os", "os.environ['MPLBACKEND'] = 'Agg'", "from pyodide.code import eval_code_async",
-          "def show():", "    import io, base64, matplotlib", "    matplotlib.use('Agg')", "    import matplotlib.pyplot as plt",
-          "    buf = io.BytesIO()", "    plt.savefig(buf, format='png', bbox_inches='tight', dpi=100)", "    plt.close('all')",
-          "    print('__KVIMG__' + base64.b64encode(buf.getvalue()).decode() + '__')",
-          "async def _kv_run(src):", "    r = await eval_code_async(src, globals())", "    if r is None: return None", "    globals()['_'] = r",
-          "    h = getattr(r, '_repr_html_', None)", "    if callable(h):", "        try:", "            v = h()", "            if v: return ['html', v]",
-          "        except Exception: pass", "    return ['text', repr(r)]"
-        ].join("\n");
-        function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-        function status(t, ok) { $("pystat").textContent = t; $("pystat").classList.toggle("chip--solid", !!ok); }
-
-        function boot() {
-          if (booting) return booting;
-          status("Python yükleniyor…");
-          booting = new Promise(function (ok, no) {
-            var s = document.createElement("script");
-            s.src = "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js";
-            s.onload = ok; s.onerror = function () { no(new Error("Pyodide indirilemedi")); };
-            document.head.appendChild(s);
-          }).then(function () { return loadPyodide(); }).then(function (p) {
-            py = p;
-            p.setStdout({ batched: function (s) { write(s, ""); } });
-            p.setStderr({ batched: function (s) { write(s, "e"); } });
-            return p.runPythonAsync(PRELUDE);
-          }).then(function () { status("Python hazır", true); return py; },
-            function (e) { status("Python yüklenemedi"); booting = null; throw e; });
-          return booting;
-        }
-
-        function write(s, cls, el) {
-          el = el || cur; if (!el) return;
-          var m = /^__KVIMG__([A-Za-z0-9+\/=]+)__$/.exec(s);
-          if (m) { var img = document.createElement("img"); img.alt = "Matplotlib grafiği"; img.src = "data:image/png;base64," + m[1]; el.appendChild(img); return; }
-          var pre = el.lastElementChild;
-          if (!pre || pre.tagName !== "PRE") { pre = document.createElement("pre"); el.appendChild(pre); }
-          var sp = document.createElement("span"); if (cls) sp.className = cls; sp.textContent = s + "\n"; pre.appendChild(sp);
-        }
-        function trimTb(msg) {
-          var l = msg.split("\n"), i = l.findIndex(function (x) { return x.indexOf('File "<exec>"') > -1; });
-          return (i > 0 ? [l[0]].concat(l.slice(i)) : l).join("\n").trim();
-        }
-
-        function inline(s) { return s.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"); }
-        function md(src) {
-          var h = "", list = false;
-          src.split("\n").forEach(function (l) {
-            var m = /^\s*[-*] (.*)/.exec(l);
-            if (m) { if (!list) { h += "<ul>"; list = true; } h += "<li>" + inline(esc(m[1])) + "</li>"; return; }
-            if (list) { h += "</ul>"; list = false; }
-            if ((m = /^(#{1,3}) (.*)/.exec(l))) { var n = m[1].length + 1; h += "<h" + n + ">" + inline(esc(m[2])) + "</h" + n + ">"; }
-            else if (l.trim()) h += "<p>" + inline(esc(l)) + "</p>";
-          });
-          return h + (list ? "</ul>" : "");
-        }
-        function renderMd(c, on) {
-          var ta = c.querySelector(".x-src"), v = c.querySelector(".x-md");
-          if (on) v.innerHTML = md(ta.value) || "<p class='x-st'>Boş metin. Düzenlemek için çift tıkla.</p>";
-          ta.hidden = on; v.hidden = !on;
-          if (!on) ta.focus();
-        }
-        function size(ta) { ta.rows = Math.max(2, ta.value.split("\n").length); }
-
-        function add(type, src, after) {
-          var c = document.createElement("div"), code = type === "code";
-          c.className = "x-cell"; c._t = type;
-          c.innerHTML = '<span class="x-cnt">' + (code ? "[ ]" : "") + '</span><div>' +
-            '<textarea class="x-src" spellcheck="false" aria-label="' + (code ? "Kod hücresi" : "Metin hücresi") + '"></textarea>' +
-            (code ? '<div class="x-out" aria-live="polite"></div>' : '<div class="x-md" tabindex="0" title="Düzenlemek için çift tıkla" hidden></div>') + '</div>' +
-            '<div class="x-tools"><button class="x-ib" data-a="run" title="Shift+Enter">Çalıştır</button><button class="x-ib" data-a="up" aria-label="Yukarı taşı">↑</button>' +
-            '<button class="x-ib" data-a="down" aria-label="Aşağı taşı">↓</button><button class="x-ib" data-a="del" aria-label="Hücreyi sil">×</button></div>';
-          var ta = c.querySelector(".x-src"); ta.value = src || ""; size(ta);
-          if (after && after.parentNode === nb) nb.insertBefore(c, after.nextSibling); else nb.appendChild(c);
-          if (!code && src) renderMd(c, true);
-          return c;
-        }
-
-        async function exec(c) {
-          if (c._t === "md") return renderMd(c, true);
-          var out = c.querySelector(".x-out"), cnt = c.querySelector(".x-cnt"), src = c.querySelector(".x-src").value;
-          out.innerHTML = ""; cnt.textContent = "[*]";
-          try {
-            await boot();
-            await py.loadPackagesFromImports(src);
-            cur = out;
-            var fn = py.globals.get("_kv_run"), r = await fn(src); fn.destroy();
-            if (r) {
-              var v = r.toJs(); r.destroy();
-              var d = document.createElement(v[0] === "html" ? "div" : "pre");
-              if (v[0] === "html") d.innerHTML = v[1]; else d.textContent = v[1];
-              out.appendChild(d);
-            }
-          } catch (e) { write(trimTb(String(e && e.message || e)), "e", out); }
-          finally { cur = null; c._n = ++count; cnt.textContent = "[" + count + "]"; }
-        }
-        function run(c) { queue = queue.then(function () { return exec(c); }); return queue; }
-
-        nb.addEventListener("click", function (e) {
-          var b = e.target.closest("[data-a]"); if (!b) return;
-          var c = b.closest(".x-cell"), a = b.dataset.a;
-          if (a === "run") run(c);
-          else if (a === "up" && c.previousElementSibling) nb.insertBefore(c, c.previousElementSibling);
-          else if (a === "down" && c.nextElementSibling) nb.insertBefore(c.nextElementSibling, c);
-          else if (a === "del") c.remove();
-          if (a === "up" || a === "down") b.focus();
-        });
-        nb.addEventListener("keydown", function (e) {
-          if (e.key !== "Enter") return;
-          var c = e.target.closest(".x-cell");
-          if (e.target.classList.contains("x-md")) { e.preventDefault(); return renderMd(c, false); }
-          if (!e.shiftKey || !e.target.classList.contains("x-src")) return;
-          e.preventDefault(); run(c);
-          var n = c.nextElementSibling || add("code", "", c), t = n.querySelector(".x-src");
-          (t.hidden ? n.querySelector(".x-md") : t).focus();
-        });
-        nb.addEventListener("dblclick", function (e) { var m = e.target.closest(".x-md"); if (m) renderMd(m.closest(".x-cell"), false); });
-        nb.addEventListener("input", function (e) { if (e.target.classList.contains("x-src")) size(e.target); });
-
-        function focused() { return document.activeElement && document.activeElement.closest && document.activeElement.closest(".x-cell"); }
-        $("nb-code").addEventListener("click", function () { add("code", "", focused()).querySelector(".x-src").focus(); });
-        $("nb-md").addEventListener("click", function () { renderMd(add("md", "", focused()), false); });
-        $("nb-all").addEventListener("click", function () { [].forEach.call(nb.children, run); });
-        $("nb-clear").addEventListener("click", function () {
-          nb.querySelectorAll(".x-out").forEach(function (o) { o.innerHTML = ""; });
-          nb.querySelectorAll(".x-cell").forEach(function (c) { if (c._t === "code") { c._n = null; c.querySelector(".x-cnt").textContent = "[ ]"; } });
-        });
-        $("nb-pkg").addEventListener("click", async function () {
-          var b = this; b.disabled = true;
-          try { await boot(); status("Paketler yükleniyor…"); await py.loadPackage(["numpy", "pandas", "matplotlib"]); status("Python hazır · numpy, pandas, matplotlib", true); }
-          catch (e) { status("Paket yüklenemedi"); }
-          b.disabled = false;
-        });
-        $("nb-dl").addEventListener("click", function () {
-          var cells = [].map.call(nb.children, function (c, i) {
-            var src = c.querySelector(".x-src").value.split("\n").map(function (l, j, a) { return j < a.length - 1 ? l + "\n" : l; });
-            var o = { cell_type: c._t === "md" ? "markdown" : "code", id: "kovan-" + i, metadata: {}, source: src };
-            if (c._t !== "md") { o.execution_count = c._n || null; o.outputs = []; }
-            return o;
-          });
-          var doc = { nbformat: 4, nbformat_minor: 5, cells: cells, metadata: {
-            kernelspec: { name: "python3", display_name: "Python 3 (Pyodide)", language: "python" }, language_info: { name: "python" } } };
-          var url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 1)], { type: "application/x-ipynb+json" }));
-          var a = document.createElement("a"); a.href = url; a.download = "kovan.ipynb";
-          document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-        });
-
-        add("md", "# Kovan Not Defteri\nTarayıcıda çalışan **gerçek Python**. Grafikler için `show()` kullan.\n- Shift+Enter: çalıştır\n- Çift tıkla: metni düzenle");
-        add("code", 'print("Merhaba Kovan!")');
-        add("code", 'import pandas as pd\n\ndf = pd.DataFrame({\n    "ay": ["Oca", "Şub", "Mar", "Nis", "May", "Haz"],\n    "satis": [120, 135, 150, 142, 170, 188],\n})\nprint(df)\ndf.describe()');
-        add("code", 'import matplotlib.pyplot as plt\n\nplt.figure(figsize=(6, 3))\nplt.bar(df["ay"], df["satis"], color="#f5b301")\nplt.title("Aylık satış")\nplt.ylabel("Satış")\nshow()');
-        document.querySelector('.x-nav[data-view="not"]').addEventListener("click", function () { boot().catch(function () {}); });
-      })();
-    </script>
-  </body>
+  <script type="module" src="js/app.js"></script>
+</body>
 </html>
