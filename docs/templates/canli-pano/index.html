@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Canlı Pano · İstanbul</title>
+  <meta name="description" content="İstanbul hava durumu, döviz kurları ve kripto fiyatları — anahtarsız, canlı açık verilerle.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📡%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="kovan-config.js"></script>
+  <script src="kovan-db.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><i aria-hidden="true">📡</i> Canlı Pano <small class="muted">İstanbul</small></div>
+      <nav class="row"><a href="kaynaklar.html">Veri kaynakları</a><span class="chip" id="status">Yükleniyor…</span></nav>
+    </header>
+    <p class="clock" id="clock" aria-live="off"></p>
+
+    <main class="dash">
+      <section class="card weather" aria-labelledby="h-w" id="weather" aria-busy="true">
+        <h2 id="h-w">Hava durumu</h2>
+        <div class="sk" style="height:72px;width:60%"></div><div class="sk" style="height:18px;width:80%;margin-top:12px"></div><div class="sk" style="height:70px;margin-top:16px"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-fx">
+        <h2 id="h-fx">Döviz <small class="muted">₺ karşılığı</small></h2>
+        <div class="kpis" id="fx" aria-busy="true"><div class="sk" style="height:64px"></div><div class="sk" style="height:64px"></div><div class="sk" style="height:64px"></div></div>
+        <p class="muted small" id="fx-note"></p>
+      </section>
+
+      <section class="card wide" aria-labelledby="h-c">
+        <div class="row"><h2 id="h-c">Kripto <small class="muted">TRY · son 24 saat</small></h2><span class="muted small">30 sn'de bir yenilenir</span></div>
+        <div class="coins" id="crypto" aria-busy="true"><div class="sk" style="height:120px"></div><div class="sk" style="height:120px"></div><div class="sk" style="height:120px"></div></div>
+      </section>
+    </main>
+
+    <footer class="src">
+      <span>Hava: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> · Kurlar: <a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter</a>/ECB · Kripto: Binance · Yatırım tavsiyesi değildir.</span>
+      <span id="updated"></span>
+    </footer>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>

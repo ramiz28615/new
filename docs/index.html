@@ -13,10 +13,11 @@
   <a class="skip" href="#prompt" data-i18n="skip">İçeriğe geç</a>
   <div class="app" id="app">
     <aside class="side" aria-label="Bölümler">
-      <div class="brand"><i aria-hidden="true"></i><span>Kovan Studio</span><small>0.3</small></div>
+      <div class="brand"><i aria-hidden="true"></i><span>Kovan Studio</span><small>0.4</small></div>
       <nav class="nav" id="nav">
         <button class="nav-btn" data-view="build" aria-current="page"><span aria-hidden="true">✦</span><b data-i18n="nav.build">Oluştur</b></button>
         <button class="nav-btn" data-view="projects"><span aria-hidden="true">▤</span><b data-i18n="nav.projects">Projeler</b></button>
+        <button class="nav-btn" data-view="data"><span aria-hidden="true">📡</span><b data-i18n="nav.data">Canlı Veri</b></button>
         <button class="nav-btn" data-view="deploy"><span aria-hidden="true">⇪</span><b data-i18n="nav.deploy">Yayınla</b></button>
         <button class="nav-btn" data-view="notebook"><span aria-hidden="true">𝑓</span><b data-i18n="nav.notebook">Not Defteri</b></button>
         <button class="nav-btn" data-view="motor"><span aria-hidden="true">⚙</span><b data-i18n="nav.motor">Motor</b></button>
@@ -96,7 +97,7 @@
                   <button class="icon-btn" id="pv-open" data-i18n-title="newtab" title="Yeni sekmede aç" aria-label="Yeni sekmede aç">↗</button>
                 </div>
                 <div class="stage" id="stage">
-                  <iframe id="pv-frame" title="Canlı önizleme" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox"></iframe>
+                  <iframe id="pv-frame" title="Canlı önizleme" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-downloads" allow="geolocation *; clipboard-write *; fullscreen *" referrerpolicy="strict-origin-when-cross-origin"></iframe>
                 </div>
                 <div class="console" id="console">
                   <div class="console-bar">
@@ -301,6 +302,32 @@
         </div>
       </section>
 
+      <!-- ================= LIVE DATA ================= -->
+      <section class="view view-page" id="view-data" hidden>
+        <h1 data-i18n="nav.data">Canlı Veri</h1>
+        <p class="muted">Üretilen siteler ve uygulamalar bu kataloğdaki <b>anahtarsız, CORS açık, ücretsiz</b> API'lerden gerçek veriyi çalışma anında çeker. Model, isteğine uygun API'leri otomatik seçer; buradan test edip istediğini projeye ekleyebilirsin.</p>
+        <div class="panel">
+          <div class="toolbar">
+            <label class="check"><input type="checkbox" id="d-live" checked> <b>Canlı veri kullan</b></label>
+            <span class="muted" id="d-live-note"></span>
+          </div>
+          <div class="toolbar">
+            <input class="input grow" id="d-search" type="search" placeholder="API ara: hava, döviz, deprem, dizi…" aria-label="API ara">
+            <select class="sel" id="d-cat" aria-label="Kategori"></select>
+            <span class="muted" id="d-count"></span>
+          </div>
+          <div class="api-grid" id="d-list" role="list"></div>
+        </div>
+        <div class="panel">
+          <h2 class="h2">Arka uç: formlar ve veritabanı</h2>
+          <p class="muted" id="d-be-status"></p>
+          <div class="toolbar">
+            <button class="btn" id="d-be-settings">Ayarları aç</button>
+            <button class="btn" id="d-sql">Supabase SQL şeması</button>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= SETTINGS ================= -->
       <section class="view view-page" id="view-settings" hidden>
         <h1 data-i18n="nav.settings">Ayarlar</h1>
@@ -334,6 +361,25 @@
             <button class="btn btn-primary" id="s-save" data-i18n="save">Kaydet</button>
             <button class="btn btn-danger" id="s-clear" data-i18n="set.clear">Anahtarları sil</button>
             <span class="muted" id="s-msg" role="status"></span>
+          </div>
+        </div>
+        <div class="panel" id="be-panel">
+          <h2 class="h2">Arka uç: formlar ve veritabanı (üretilen siteler için)</h2>
+          <p class="fine">Bu değerler projeye <code>kovan-config.js</code> olarak yazılır ve yayınlanan sitede herkese açıktır — form anahtarı ve Supabase <b>anon</b> anahtarı bunun için tasarlanmıştır (Supabase verisini RLS korur). Yapay zekâ ve GitHub anahtarların asla projeye ya da önizlemeye girmez. <b>service_role</b> anahtarını buraya yazma.</p>
+          <div class="form-grid">
+            <label><span>Form servisi</span><select class="sel" id="be-form-provider"></select></label>
+            <label><span id="be-form-key-lbl">Anahtar / e-posta</span><input class="input" id="be-form-key" autocomplete="off" spellcheck="false"></label>
+          </div>
+          <p class="fine" id="be-form-help"></p>
+          <div class="form-grid">
+            <label><span>Supabase Project URL</span><input class="input mono" id="be-sb-url" placeholder="https://abcdefgh.supabase.co" autocomplete="off" spellcheck="false"></label>
+            <label><span>Supabase anon (public) anahtarı</span><input class="input mono" id="be-sb-key" placeholder="eyJhbGciOi…" autocomplete="off" spellcheck="false"></label>
+          </div>
+          <p class="fine">Supabase yoksa üretilen uygulamalar verileri <code>kovan-db.js</code> ile tarayıcıda (localStorage) kalıcı tutar; Supabase eklediğinde aynı kod veritabanına geçer.</p>
+          <div class="toolbar">
+            <button class="btn btn-primary" id="be-save">Kaydet</button>
+            <button class="btn" id="be-sql">SQL şemasını göster</button>
+            <span class="muted" id="be-msg" role="status"></span>
           </div>
         </div>
         <div class="panel">

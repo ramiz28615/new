@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dizi Rehberi · Ara, keşfet, listene ekle</title>
+  <meta name="description" content="TVmaze verisiyle dizi ve TV programı arama: posterler, puanlar, oyuncular, bölümler ve bugünün yayın akışı.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎬%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="kovan-config.js"></script>
+  <script src="kovan-db.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><i aria-hidden="true">🎬</i> Dizi Rehberi</div>
+      <nav class="tabs" aria-label="Bölümler"><button aria-pressed="true" data-tab="discover">Keşfet</button><button aria-pressed="false" data-tab="list">Listem <span id="fav-count" class="chip">0</span></button></nav>
+    </header>
+    <form id="search" class="search card" role="search" autocomplete="off">
+      <label class="sr" for="q">Dizi ara</label>
+      <input id="q" type="search" placeholder="Dizi ara: Breaking Bad, The Office, Dark…" autofocus>
+      <span class="chip" id="status">Hazır</span>
+    </form>
+    <main>
+      <h2 id="title">Bugün ABD'de yayında</h2>
+      <div class="grid-shows" id="shows" aria-live="polite" aria-busy="true"></div>
+    </main>
+    <footer class="src"><span>Veri ve posterler: <a href="https://www.tvmaze.com" target="_blank" rel="noopener">TVmaze</a> (CC BY-SA) · Listen bu tarayıcıda (veya bağlıysa Supabase'de) saklanır.</span><span id="updated"></span></footer>
+  </div>
+
+  <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <div class="sheet" id="sheet"></div>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>

@@ -2,6 +2,39 @@
 
 Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/) esinlidir; sürümler [SemVer](https://semver.org/lang/tr/) izler.
 
+## [0.4.0] - 2026-10-30
+
+### Eklenenler — üretilen siteler gerçek, canlı veriyle çalışıyor
+- **Canlı veri API kataloğu** (`docs/js/apis.js`): anahtarsız, CORS açık, ücretsiz 38 API (hava, döviz, kripto, harita,
+  deprem, bilgi, haber, uzay, yemek, dizi/müzik, IP, görsel, söz, hayvan, geliştirici). Her biri sandbox'tan curl ile
+  doğrulandı (HTTP 200 + `Access-Control-Allow-Origin`); 3'ü `limited` (CORS var, IP kotası/geçici 5xx). Doğrulamayı
+  geçemeyenler çıkarıldı: api.binance.com (451), REST Countries (kaldırılmış sürüm), Nager.Date ve Open Library
+  aramaları (502), Jikan (502), Deezer ve ZenQuotes (CORS yok), Quotable (yanıt yok), OpenAQ (anahtar gerekli),
+  CoinCap (403), exchangerate.host (anahtar gerekli), Nominatim (CORS'suz 429). `tests/live/check-apis.mjs` canlı kontrol betiği.
+- **Sistem istemine canlı veri:** istekle ilgili API alt kümesi (anahtar kelime/kategori puanı, token sınırlı) + katı
+  kurallar: çalışma anında fetch, iskelet yükleme, hata + Tekrar dene, önbellek, otomatik yenileme, `tr-TR`, atıf,
+  uydurma sayı yasağı, gerçek görseller. “Örnek veri üret” kuralı kaldırıldı; ✨ Geliştir de canlı veriyi ister.
+- **Canlı Veri ekranı:** katalog arama/kategori, tarayıcıdan **Test et** (JSON çıktısı), **Projeye ekle** (sohbete talimat),
+  **Canlı veri kullan** anahtarı (varsayılan açık).
+- **Arka uç, sunucusuz:** `kovan-db.js` veri katmanı (localStorage ya da Supabase üzerinde aynı async CRUD + abonelik,
+  yerel/Supabase kimlik doğrulama, önbellekli ve yeniden denemeli fetch, form gönderimi) ve `kovan-config.js`
+  (yalnızca herkese açık değerler) web projelerine otomatik eklenir. Ayarlar'da form servisi (Web3Forms / FormSubmit /
+  Formspree) ve Supabase (URL + anon anahtar). Supabase varken model sabit sürümlü supabase-js v2 kullanır ve
+  `supabase/schema.sql` üretir; Studio da koleksiyonlardan RLS politikalı SQL şeması üretir (kopyala + adımlar).
+- **6 hazır canlı şablon** (anahtarsız çalışır): Hava durumu, Döviz & Kripto (TRY), Deprem haritası (USGS + Leaflet/CARTO),
+  Uzay haberleri (+ NASA APOD), Dizi arama (TVmaze), Restoran rezervasyon (gerçek form + Supabase/yerel DB).
+- **Örnek proje** artık canlı pano: İstanbul hava + döviz + kripto (24 saatlik mini grafik), anahtarsız.
+- **Studio boş ekranında canlı şerit:** İstanbul hava, USD/TRY, EUR/TRY, BTC/TRY; çevrimdışıyken zarifçe “—”.
+- **Testler:** katalog seçimi, istem enjeksiyonu, snippet, kovan-db CRUD/fetch/form/auth/Supabase (stub istemci),
+  arka uç yapılandırması ve şema/RLS, önizleme sandbox özellikleri, canlı şerit, 7 şablonun jsdom'da çalıştırılması
+  (stub fetch, gerçek uç noktalar doğrulanır). Node testleri 37 → 61.
+
+### Değişenler
+- Önizleme sandbox'ı `PREVIEW_SANDBOX` sabitinde (`allow-downloads` eklendi, `allow-same-origin` yok) ve iframe'e
+  `allow="geolocation; clipboard-write; fullscreen"` verildi; CSP yok, CORS istekleri serbest.
+- Studio'nun yönettiği `kovan-db.js` model bağlamına tam metin olarak gönderilmez (her turda ~4k token tasarruf).
+- `docs/js/samples.js` kaldırıldı (örnek proje `docs/templates/canli-pano/`).
+
 ## [0.3.0] - 2026-10-30
 
 ### Eklenenler — Kovan Studio gerçek bir yapay zekâ uygulama oluşturucu oldu

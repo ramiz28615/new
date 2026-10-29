@@ -21,7 +21,8 @@
    Dosyalar akış sırasında ağaçta belirir, önizleme kendiliğinden yenilenir. Sonra *“menüye fotoğraflı kartlar ekle”*
    gibi takip mesajlarıyla projeyi düzenle: model yalnızca değişen/yeni/silinen dosyaları döner.
 
-Anahtarın yoksa **Projeler → Örnek projeyi aç** ile önizleme, editör, ZIP ve yayın akışlarını deneyebilirsin.
+Anahtarın yoksa **Projeler → Örnek projeyi aç** canlı bir pano açar (İstanbul hava durumu + döviz + kripto, gerçek
+veriyle); boş ekrandaki 6 **canlı veri şablonu** da anahtarsız çalışır.
 
 ### Sağlayıcılar
 | Sağlayıcı | Anahtar | Not |
@@ -65,6 +66,38 @@ derler; ikililer çalıştırmanın **Artifacts** bölümünde çıkar. Yayın e
 - **Paylaş:** küçük projeler sıkıştırılıp (CompressionStream) bağlantının `#p=` kısmına konur; açan kişi kendi kopyasını görür.
 - **Not Defteri** (Pyodide) ve **Motor** (yerel Kovan motoru) sekmeleri korunmuştur.
 
+### Canlı veri ve arka uç (0.4)
+Üretilen siteler **gerçek veriyle** çalışır; uydurma sayı, lorem ipsum ya da sabit “demo” dizisi yerine çalışma anında
+açık API'lerden veri çeker.
+
+- **API kataloğu** (`docs/js/apis.js`): anahtarsız, CORS açık, ücretsiz 38 API — Open-Meteo (tahmin, şehir arama, hava
+  kalitesi), wttr.in, Sunrise-Sunset, Frankfurter/ECB ve ExchangeRate-API (TRY dahil), Binance piyasa verisi ve CoinGecko,
+  Leaflet + CARTO karoları, CountriesNow, USGS / Kandilli / EMSC depremleri, Wikipedia özet/arama/günün içeriği,
+  Spaceflight News, Hacker News, NASA APOD, TheMealDB, TheCocktailDB, Open Food Facts, TVmaze, iTunes, PokéAPI,
+  ipwho.is, ipapi.co, picsum.photos, DiceBear, DummyJSON sözleri, Advice Slip, Dog CEO, TheCatAPI, Cat Facts, GitHub
+  (JSONPlaceholder ve RandomUser yalnızca açıkça demo istendiğinde). Her girişte uç nokta, örnek yanıt şekli, sınır notu,
+  atıf ve Türkçe açıklama var. Hepsi 2026-10-30'da sunucudan doğrulandı (HTTP 200 + `Access-Control-Allow-Origin`);
+  `node tests/live/check-apis.mjs` ile yeniden kontrol edilir (CI'da çalışmaz).
+- **Sistem istemi:** isteğe (ve son sohbet turlarına) göre ilgili API'ler anahtar kelimeyle seçilip isteme eklenir
+  (token sınırlı) + kurallar: çalışma anında fetch, yükleniyor iskeletleri, hata + **Tekrar dene**, önbellek, uygun
+  aralıkla otomatik yenileme (fiyat 30–60 sn, hava 10–15 dk), `tr-TR` biçimlendirme, metrik birimler, atıf, gerçek görseller.
+- **Canlı Veri** ekranı: kataloğu ara/filtrele, **Test et** (uç noktayı tarayıcından çağırır, JSON'u gösterir),
+  **Projeye ekle** (hazır talimatı sohbete yazar), **Canlı veri kullan** anahtarı (varsayılan açık).
+- **Veri katmanı** `kovan-db.js` (Studio web projelerine otomatik ekler ve yönetir; modele tam metni gönderilmez):
+  `KovanDB.collection(ad)` ile async CRUD + abonelik, `KovanDB.auth` (kayıt/giriş/çıkış), `KovanDB.sendForm`,
+  önbellekli ve yeniden denemeli `KovanDB.fetchJSON`, `tr-TR` biçimlendiriciler. Supabase yoksa veriler localStorage'da
+  kalıcıdır; Supabase eklenince **aynı kod** veritabanına geçer.
+- **Formlar:** Ayarlar → *Arka uç* bölümünden **Web3Forms** (erişim anahtarı), **FormSubmit** (e-posta) veya
+  **Formspree** (form kimliği) seç; üretilen iletişim/rezervasyon formları gerçekten gönderir. Seçilmezse gönderim
+  yerel olarak saklanır ve arayüz bunu açıkça söyler (sahte “gönderildi” yok).
+- **Supabase (isteğe bağlı):** Project URL + anon anahtarı girildiğinde model supabase-js v2'yi sabit sürümlü ESM'den
+  (`esm.sh/@supabase/supabase-js@2.45.4`) kullanır ve `supabase/schema.sql` üretir. Studio da projedeki koleksiyonlardan
+  RLS politikalı şemayı üretip kopyala düğmesi ve SQL Editor adımlarıyla gösterir (**Supabase SQL şeması**).
+  `kovan-config.js` yalnızca herkese açık değerleri içerir (form anahtarı, Supabase anon anahtarı); service_role asla.
+- **Şablonlar (anahtarsız, hazır):** Hava durumu (İstanbul + şehir arama), Döviz & Kripto (TRY), Deprem haritası
+  (USGS + Leaflet), Uzay haberleri (+ NASA APOD), Dizi arama (TVmaze), Restoran rezervasyon (form + Supabase/yerel DB).
+- **Studio boş ekranı:** canlı şerit — İstanbul hava, USD/TRY, EUR/TRY, BTC/TRY (5 dk önbellek, çevrimdışıyken “—”).
+
 ### Yayınlama (gerçek)
 **Yayınla** ekranında bir GitHub token'ı gir:
 [klasik token](https://github.com/settings/tokens/new?scopes=repo,workflow&description=Kovan%20Studio) (`repo`, iş akışı
@@ -79,7 +112,10 @@ Alternatif: **Netlify'a sürükle-bırak için ZIP indir** → https://app.netli
   (openrouter.ai, api.anthropic.com, api.openai.com, generativelanguage.googleapis.com) ya da api.github.com'a gönderilir.
   Kovan'ın sunucusu yoktur. Ortak bilgisayarda **Ayarlar → Anahtarları sil**; harcama limiti olan anahtarlar kullan.
 - Üretilen kod, Studio'dan yalıtılmış (`allow-same-origin` olmadan) korumalı bir iframe'de çalışır; anahtarlarına erişemez.
-  `localStorage` önizlemede proje başına taklit edilir.
+  `localStorage` önizlemede proje başına taklit edilir. Sandbox: `allow-scripts allow-forms allow-modals allow-popups
+  allow-popups-to-escape-sandbox allow-downloads`; CSP yok, bu yüzden açık API'lere, form servislerine, Supabase'e ve
+  CDN'lere yapılan CORS istekleri önizlemede çalışır. Yapay zekâ/GitHub anahtarları hiçbir zaman proje dosyalarına
+  (`kovan-config.js` dahil) ya da önizlemeye girmez.
 
 ### Studio geliştirme
 Derleme adımı yok: `docs/` düz ES modülleri + sürümü sabitlenmiş CDN kütüphaneleri (CodeMirror 5.65.16, JSZip 3.10.1, Pyodide 0.26.4).
@@ -256,6 +292,11 @@ cd tests/js && npm ci && node --test   # Kovan Studio testleri
 - Studio: Bash/Perl/Windows betikleri tarayıcıda çalışmaz (indir ve çalıştır); Python yalnızca Pyodide'nin desteklediği
   paketlerle ve GUI'siz çalışır, `input()` yalnızca önceden yazılan stdin satırlarını okur; Expo Snack büyük projelerde
   URL yerine form ile açılır (en iyi çaba); paylaşım bağlantısı ~60 KB sıkıştırılmış veriyle sınırlıdır.
+- Canlı veri: API'ler üçüncü taraf servislerdir; kota (Open-Meteo/CoinGecko IP başına günlük sınır, NASA DEMO_KEY
+  30/saat, GitHub 60/saat), kesinti ve sürüm değişikliği olabilir. Şablonlar önbellek, yedek kaynak ve **Tekrar dene**
+  ile bunu yumuşatır. Web3Forms ve FormSubmit sunucu IP'lerini engellediği için sandbox'tan doğrulanamadı (tarayıcıdan
+  kullanım için tasarlandılar); Formspree'nin CORS'u doğrulandı. Gerçek bir sağlayıcı anahtarıyla ve gerçek tarayıcıda
+  uçtan uca deneme henüz yapılmadı (testler jsdom + stub fetch ile).
 - Paralel görevler aynı klasörü paylaşır; bir görevin commit'i o anda çalışan başka bir görevin dosyalarını da
   içerebilir. Görev başına kesin ayrım için `-w 1` kullan.
 - Codex maliyeti çıktıdaki token sayısından **tahmin** edilir; Codex sayıyı yazmazsa maliyet 0 görünür.

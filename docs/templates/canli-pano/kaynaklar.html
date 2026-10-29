@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Veri kaynakları · Canlı Pano</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="top"><a class="brand" href="index.html" style="text-decoration:none;color:inherit"><i aria-hidden="true">📡</i> Canlı Pano</a><a href="index.html">← Panoya dön</a></header>
+    <main class="card prose">
+      <h1>Veri kaynakları</h1>
+      <p>Bu panodaki her sayı tarayıcında, sayfa açıldığında ücretsiz ve anahtarsız açık API'lerden çekilir. Uydurma ya da sabit kodlanmış veri yoktur; bağlantı koparsa son alınan veri “çevrimdışı” etiketiyle gösterilir.</p>
+      <table class="tbl">
+        <thead><tr><th scope="col">Bölüm</th><th scope="col">Kaynak</th><th scope="col">Yenileme</th></tr></thead>
+        <tbody>
+          <tr><td>Hava durumu</td><td><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0), yedek <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a></td><td>15 dakika</td></tr>
+          <tr><td>Döviz kurları</td><td><a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter</a> — Avrupa Merkez Bankası referans kurları</td><td>Saatlik (ECB iş günlerinde ~16:00 CET yayımlar)</td></tr>
+          <tr><td>Kripto fiyatları</td><td>Binance piyasa verisi (data-api.binance.vision)</td><td>30 saniye</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">Kovan Studio ile oluşturuldu. Sohbetten “deprem listesi ekle” ya da “Ankara'yı da göster” gibi değişiklikler isteyebilirsin.</p>
+    </main>
+  </div>
+</body>
+</html>

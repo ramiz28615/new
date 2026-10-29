@@ -7,6 +7,15 @@
 // - localStorage/sessionStorage/cookie are shimmed (the sandbox has an opaque origin) and synced to the parent
 import { resolveRef, fileDataUrl, utf8ToBase64, isDataUrl } from "./vfs.js";
 
+/**
+ * Sandbox for the preview iframe. Scripts, forms, modals, popups and downloads are allowed, and network calls (fetch to
+ * public APIs, form endpoints, Supabase, CDNs) work because they are plain CORS requests. allow-same-origin is
+ * deliberately absent: the preview runs in an opaque origin, so it can never read the Studio's localStorage
+ * (AI provider keys, GitHub token) or IndexedDB; storage inside the preview is a per-project shim synced by postMessage.
+ */
+export const PREVIEW_SANDBOX = "allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-downloads";
+export const PREVIEW_ALLOW = "geolocation *; clipboard-write *; fullscreen *";
+
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 /** Script injected first into every preview page. `seed` = stored localStorage entries for this project. */
@@ -167,7 +176,7 @@ export function standaloneDocument(files, page = "index.html", title = "Kovan ö
   const resolver = `function res(from,ref){ref=ref.split('#')[0].split('?')[0];var b=ref.charAt(0)==='/'?[]:from.split('/').slice(0,-1);ref.split('/').forEach(function(s){if(!s||s==='.')return;if(s==='..'){b.pop();return}b.push(s)});return b.join('/')}`;
   return `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <style>html,body{margin:0;height:100%;background:#fff}iframe{border:0;width:100%;height:100%;display:block}</style></head><body>
-<iframe id="f" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox" title="${esc(title)}"></iframe>
+<iframe id="f" sandbox="${PREVIEW_SANDBOX}" allow="${PREVIEW_ALLOW}" title="${esc(title)}"></iframe>
 <script>var PAGES=${JSON.stringify(pages).replace(/<\/script/gi, "<\\/script")};var f=document.getElementById('f');${resolver}
 function show(p){if(!PAGES[p]){var c=p.replace(/\\/$/,'')+'/index.html';if(PAGES[c])p=c;else return}f.srcdoc=PAGES[p];document.title=${JSON.stringify(title)}+' · '+p}
 addEventListener('message',function(e){var d=e.data;if(e.source!==f.contentWindow||!d||!d.kovan)return;if(d.t==='nav')show(res(d.from||'index.html',d.href)||'index.html')});

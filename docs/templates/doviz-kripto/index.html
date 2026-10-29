@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Döviz & Kripto Takip · TRY</title>
+  <meta name="description" content="Canlı döviz kurları (ECB / Frankfurter) ve kripto fiyatları (Binance) Türk lirası cinsinden. Çevirici ve 30 günlük grafik.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💱%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="kovan-config.js"></script>
+  <script src="kovan-db.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><i aria-hidden="true">💱</i> Döviz & Kripto</div>
+      <div class="row"><span class="chip" id="status">Yükleniyor…</span><button class="btn" id="refresh" aria-label="Şimdi yenile">⟳ Yenile</button></div>
+    </header>
+
+    <main class="layout">
+      <section class="card" aria-labelledby="h-fx">
+        <div class="row"><h2 id="h-fx">Döviz kurları <small class="muted">1 birim = ₺</small></h2><span class="muted small" id="fx-date"></span></div>
+        <div class="tiles" id="fx" aria-busy="true"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-conv">
+        <h2 id="h-conv">Çevirici</h2>
+        <form id="conv" class="conv" onsubmit="return false">
+          <label>Miktar<input id="amount" type="number" inputmode="decimal" min="0" step="any" value="100"></label>
+          <label>Kimden<select id="from"></select></label>
+          <button type="button" class="btn swap" id="swap" aria-label="Para birimlerini değiştir">⇄</button>
+          <label>Kime<select id="to"></select></label>
+        </form>
+        <p class="result" id="result" aria-live="polite">—</p>
+      </section>
+
+      <section class="card wide" aria-labelledby="h-chart">
+        <div class="row"><h2 id="h-chart">Son 30 gün</h2>
+          <div class="seg" role="group" aria-label="Grafik para birimi" id="chart-pick"></div></div>
+        <div id="chart" class="chart" aria-busy="true"><div class="sk" style="height:180px"></div></div>
+      </section>
+
+      <section class="card wide" aria-labelledby="h-crypto">
+        <div class="row"><h2 id="h-crypto">Kripto paralar <small class="muted">TRY paritesi · 24 saat</small></h2><span class="muted small" id="crypto-note">30 sn'de bir yenilenir</span></div>
+        <div class="table-wrap"><table class="tbl">
+          <thead><tr><th scope="col">Varlık</th><th scope="col">Fiyat</th><th scope="col">24s</th><th scope="col" class="hide-sm">En yüksek</th><th scope="col" class="hide-sm">En düşük</th><th scope="col" class="hide-sm">Hacim (₺)</th></tr></thead>
+          <tbody id="crypto" aria-busy="true"></tbody>
+        </table></div>
+      </section>
+    </main>
+
+    <footer class="src">
+      <span>Kurlar: <a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter</a> / Avrupa Merkez Bankası (iş günleri ~16:00 CET) · Kripto: Binance piyasa verisi. Yatırım tavsiyesi değildir.</span>
+      <span id="updated"></span>
+    </footer>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>

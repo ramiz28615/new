@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lokanta Nar · Masa rezervasyonu</title>
+  <meta name="description" content="Lokanta Nar'da masanı ayırt: tarih, saat ve kişi sayısını seç, rezervasyonun anında restorana ulaşsın.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🍽️%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="kovan-config.js"></script>
+  <script src="kovan-db.js"></script>
+</head>
+<body>
+  <header class="nav wrap">
+    <a class="brand" href="#"><i aria-hidden="true">🍽️</i> Lokanta Nar</a>
+    <nav aria-label="Ana menü"><a href="#menu">Menü</a><a href="#iletisim">İletişim</a><a class="btn btn-primary" href="#rezervasyon">Masa ayırt</a></nav>
+  </header>
+
+  <section class="hero" id="hero">
+    <div class="wrap hero-in">
+      <p class="eyebrow">Anadolu mutfağı · Kadıköy</p>
+      <h1>Ateşte pişen lezzetler,<br>sana ayrılmış bir masa.</h1>
+      <p class="lead">Rezervasyonun formu gönderdiğin anda restorana ulaşır; onay için seni arıyoruz.</p>
+      <a class="btn btn-primary" href="#rezervasyon">Rezervasyon yap</a>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <section id="rezervasyon" class="booking" aria-labelledby="rz-title">
+      <form id="form" class="card" novalidate>
+        <h2 id="rz-title">Masa ayırt</h2>
+        <div class="fields">
+          <label>Ad soyad<input name="ad" required autocomplete="name" maxlength="80"></label>
+          <label>Telefon<input name="telefon" required inputmode="tel" autocomplete="tel" placeholder="05xx xxx xx xx"></label>
+          <label>E-posta<input name="eposta" type="email" autocomplete="email" placeholder="isteğe bağlı"></label>
+          <label>Tarih<input name="tarih" type="date" required></label>
+          <label>Saat<select name="saat" required></select></label>
+          <label>Kişi<select name="kisi" required></select></label>
+          <label>Alan<select name="alan"><option>Salon</option><option>Teras</option><option>Fark etmez</option></select></label>
+          <label class="full">Not<textarea name="not" rows="2" maxlength="400" placeholder="Doğum günü, alerji, bebek sandalyesi…"></textarea></label>
+        </div>
+        <p class="hint" id="weather-hint" aria-live="polite"></p>
+        <p class="err-text" id="err" role="alert"></p>
+        <button class="btn btn-primary" type="submit" id="submit">Rezervasyonu gönder</button>
+        <p class="muted small" id="backend-note"></p>
+      </form>
+      <aside class="card" aria-labelledby="my-title">
+        <h2 id="my-title">Rezervasyonlarım</h2>
+        <ul id="mine" class="mine"></ul>
+        <p class="muted small">Bu liste bu tarayıcıda tutulur. Değişiklik için restoranı ara.</p>
+      </aside>
+    </section>
+
+    <section id="menu" aria-labelledby="menu-title">
+      <h2 id="menu-title">Mutfağımızdan</h2>
+      <p class="muted">Türk mutfağından tarifler — görseller ve tarifler TheMealDB'den canlı gelir. Güncel menü ve fiyatlar için restoranı ara.</p>
+      <div class="menu" id="menu-grid" aria-busy="true"></div>
+    </section>
+
+    <section id="iletisim" class="card contact" aria-labelledby="c-title">
+      <div><h2 id="c-title">İletişim & saatler</h2>
+        <p>Caferağa Mah., Moda Cad. · Kadıköy / İstanbul<br>Her gün 12:00–23:30</p>
+        <p><a href="https://www.openstreetmap.org/search?query=Moda%20Caddesi%20Kad%C4%B1k%C3%B6y" target="_blank" rel="noopener">Haritada aç ↗</a></p></div>
+      <div id="today" class="today"></div>
+    </section>
+  </main>
+  <footer class="src wrap"><span>Tarifler: <a href="https://www.themealdb.com" target="_blank" rel="noopener">TheMealDB</a> · Hava: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo.com</a></span><span>© Lokanta Nar</span></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>

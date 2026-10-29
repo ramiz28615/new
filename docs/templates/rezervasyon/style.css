@@ -1,0 +1,25 @@
+:root{--bg:#120d0b;--panel:#1c1512;--panel-2:#261d19;--line:#3a2c26;--ink:#f6eee9;--muted:#bba89e;--accent:#e4572e}
+.nav{display:flex;justify-content:space-between;align-items:center;padding-top:16px;padding-bottom:16px}
+.nav nav{display:flex;gap:16px;align-items:center}.nav nav a:not(.btn){color:var(--ink);text-decoration:none}
+.brand{text-decoration:none;color:var(--ink)}
+.hero{min-height:58vh;display:grid;align-items:end;background:linear-gradient(180deg,#120d0b22,#120d0bee 85%),var(--hero,linear-gradient(135deg,#5a1f12,#1c1512)) center/cover no-repeat}
+.hero-in{padding-bottom:48px}.eyebrow{color:#ffb38a;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+.hero h1{font:800 clamp(34px,6vw,62px)/1.05 Georgia,"Times New Roman",serif;margin:8px 0 12px}.lead{color:#e9d8ce;max-width:52ch;font-size:17px}
+.booking{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin:28px 0}
+@media (max-width:860px){.booking{grid-template-columns:1fr}}
+.booking h2,#menu h2,.contact h2{font:700 24px Georgia,serif;margin:0 0 14px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.full{grid-column:1/-1}
+.hint{min-height:1.4em;color:#ffcfa8;margin:12px 0 0}.err-text{color:#ff9b9b;min-height:1.4em}
+input[aria-invalid=true],select[aria-invalid=true]{border-color:#ff6b6b}
+.mine{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.mine li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px;border-radius:12px;background:var(--panel-2)}.mine small{color:var(--muted)}
+.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:14px 0 32px}
+.dish{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.dish img{aspect-ratio:4/3;object-fit:cover;width:100%}.dish div{padding:10px 12px;font-weight:600}
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}@media (max-width:700px){.contact{grid-template-columns:1fr}}
+.today{background:var(--panel-2);border-radius:12px;padding:14px;display:grid;gap:4px;align-content:center}
+.today b{font-size:28px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,140%);background:var(--ink);color:#120d0b;padding:12px 18px;border-radius:999px;font-weight:600;transition:transform .3s;max-width:90vw}
+.toast.show{transform:translate(-50%,0)}
+.spinner{width:16px;height:16px;border:2px solid #0004;border-top-color:#000;border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}

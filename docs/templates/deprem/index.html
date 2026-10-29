@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deprem Haritası · Son depremler</title>
+  <meta name="description" content="USGS verisiyle Türkiye ve dünyadaki son depremler; etkileşimli harita, büyüklük filtresi, dakikada bir yenileme.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌍%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="kovan-config.js"></script>
+  <script src="kovan-db.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><i aria-hidden="true">🌍</i> Deprem Haritası</div>
+      <span class="chip" id="status">Yükleniyor…</span>
+    </header>
+
+    <div class="filters card">
+      <label>Bölge
+        <select id="region">
+          <option value="tr">Türkiye ve çevresi · son 7 gün</option>
+          <option value="day">Dünya · M2.5+ · son 24 saat</option>
+          <option value="week">Dünya · M4.5+ · son 7 gün</option>
+        </select>
+      </label>
+      <label>En küçük büyüklük: <output id="minv">2,0</output>
+        <input id="min" type="range" min="1" max="7" step="0.5" value="2">
+      </label>
+      <div class="stats" id="stats" aria-live="polite"></div>
+    </div>
+
+    <main class="layout">
+      <div class="card map-card"><div id="map" role="region" aria-label="Deprem haritası"></div><p class="muted small" id="map-note" hidden>Harita kütüphanesi yüklenemedi; liste aşağıda.</p></div>
+      <section class="card list-card" aria-labelledby="h-list">
+        <h2 id="h-list">Son depremler</h2>
+        <ol class="quakes" id="list" aria-busy="true"><li class="sk" style="height:52px"></li><li class="sk" style="height:52px"></li><li class="sk" style="height:52px"></li><li class="sk" style="height:52px"></li></ol>
+      </section>
+    </main>
+
+    <footer class="src">
+      <span>Deprem verisi: <a href="https://earthquake.usgs.gov" target="_blank" rel="noopener">USGS</a> · Harita: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> katkıcıları © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> · Resmî bilgi için AFAD ve Kandilli'yi takip et.</span>
+      <span id="updated"></span>
+    </footer>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>

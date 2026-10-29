@@ -302,3 +302,30 @@ kbd { font-size: 11px; padding: 1px 5px; border: 1px solid var(--line2); border-
   .topbar { flex-wrap: wrap; }
   .top-actions { width: 100%; justify-content: space-between; margin-left: 0; }
 }
+
+/* ---------- 0.4: live data ---------- */
+.lw { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-s); background: var(--bg2); font-size: 12px; }
+.lw-item { display: inline-flex; align-items: baseline; gap: 5px; padding: 2px 8px; border-right: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.lw-item small { color: var(--ink3); }
+.lw-item b { font-weight: 600; }
+.lw-item em { font-style: normal; font-size: 11px; }
+.lw-item em.up { color: var(--ok); }
+.lw-item em.down { color: #f87171; }
+.lw-state { margin-left: auto; font-size: 11px; color: var(--ink3); display: inline-flex; align-items: center; gap: 5px; }
+.lw-state::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ink3); }
+.lw-state.on::before { background: var(--ok); }
+.lw-state.off::before { background: var(--warn); }
+.empty h3 { font-size: 13px; color: var(--ink2); margin: 14px 0 8px; font-weight: 600; }
+.starter.live { border-color: rgba(52, 211, 153, .35); }
+.starter .badge-live { display: inline-block; margin-top: 2px; color: var(--ok); font-size: 10.5px; }
+.api-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; margin-top: 10px; }
+.api { border: 1px solid var(--line); border-radius: var(--r-s); padding: 12px; background: var(--bg); display: grid; gap: 6px; align-content: start; min-width: 0; }
+.api h3 { margin: 0; font-size: 14px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.api p { margin: 0; font-size: 13px; color: var(--ink2); }
+.api code.ep { display: block; font-size: 11.5px; color: var(--ink3); overflow-wrap: anywhere; }
+.api .rate { font-size: 11.5px; color: var(--ink3); }
+.api .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.api pre.out { margin: 0; max-height: 260px; overflow: auto; font-size: 11.5px; background: var(--bg2); border: 1px solid var(--line); border-radius: 8px; padding: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.api pre.out.bad { border-color: #f87171; }
+.sql-box { width: 100%; min-height: 280px; font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; margin-top: 8px; }
+.steps { padding-left: 18px; font-size: 13px; color: var(--ink2); }

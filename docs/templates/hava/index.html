@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hava Durumu · Canlı tahmin</title>
+  <meta name="description" content="Open-Meteo verisiyle anlık hava, saatlik ve 7 günlük tahmin. Şehir ara, favorine ekle.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⛅%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="kovan-config.js"></script>
+  <script src="kovan-db.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><i aria-hidden="true">⛅</i> Hava Durumu</div>
+      <form id="search" class="search" role="search" autocomplete="off">
+        <label class="sr" for="q">Şehir ara</label>
+        <input id="q" type="search" placeholder="Şehir ara… (örn. İzmir, Trabzon)" aria-autocomplete="list" aria-controls="results">
+        <ul id="results" class="results" role="listbox" hidden></ul>
+      </form>
+    </header>
+
+    <main id="main" aria-live="polite">
+      <section class="hero card" id="now" aria-busy="true">
+        <div class="sk" style="height:28px;width:40%"></div>
+        <div class="sk" style="height:84px;width:55%;margin-top:14px"></div>
+        <div class="sk" style="height:18px;width:70%;margin-top:14px"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-hourly">
+        <div class="row"><h2 id="h-hourly">Önümüzdeki 24 saat</h2><span class="chip" id="status">Yükleniyor…</span></div>
+        <div class="hourly" id="hourly"><div class="sk" style="height:96px"></div></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-daily">
+        <h2 id="h-daily">7 günlük tahmin</h2>
+        <ul class="daily" id="daily"><li class="sk" style="height:44px"></li><li class="sk" style="height:44px"></li><li class="sk" style="height:44px"></li></ul>
+      </section>
+
+      <section class="card aq" aria-labelledby="h-aq">
+        <h2 id="h-aq">Hava kalitesi</h2>
+        <div id="aq"><div class="sk" style="height:40px"></div></div>
+      </section>
+    </main>
+
+    <footer class="src">
+      <span>Hava verisi: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0) · Hava kalitesi: Open-Meteo / CAMS · Yedek: <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a></span>
+      <span id="updated"></span>
+    </footer>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>

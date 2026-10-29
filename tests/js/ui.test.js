@@ -2,7 +2,7 @@
 // open the offline demo project and check the preview/editor/projects render without errors.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { JSDOM } from "jsdom";
 import { openaiSSE, streamResponse, chunkString } from "./helpers.js";
@@ -27,10 +27,15 @@ test("UI boots, renders the builder and switches views without errors", async ()
   w.addEventListener("error", (e) => errors.push(String(e.message)));
   const unhandled = (e) => errors.push("unhandled: " + (e && e.stack || e));
   process.on("unhandledRejection", unhandled);
-  // Block every network request: the boot path must not call any API.
+  // Block every network request (the live widget strip must degrade gracefully); serve the Studio's own template
+  // files (file:// URLs relative to docs/js) from disk, like GitHub Pages would.
   const fetchCalls = [];
   const realFetch = g.fetch;
-  g.fetch = async (u) => { fetchCalls.push(String(u)); throw new TypeError("network disabled in test"); };
+  g.fetch = async (u) => {
+    u = String(u);
+    if (u.startsWith("file://")) { const f = fileURLToPath(u); return existsSync(f) ? new Response(readFileSync(f, "utf8"), { status: 200 }) : new Response("", { status: 404 }); }
+    fetchCalls.push(u); throw new TypeError("network disabled in test");
+  };
   try {
     await import(pathToFileURL(DOCS + "js/app.js").href + "?t=" + Date.now());
     for (let i = 0; i < 50 && !w.document.body.classList.contains("ready"); i++) await new Promise((r) => setTimeout(r, 20));
@@ -42,23 +47,49 @@ test("UI boots, renders the builder and switches views without errors", async ()
     assert.ok($("ptype").options.length >= 8, "type selector populated");
     assert.match($("model-chip").textContent, /OpenRouter · openrouter\/free/);
     // Views
-    for (const v of ["projects", "deploy", "notebook", "motor", "settings", "build"]) {
+    // Live widget strip on the empty state: offline -> placeholders, no errors
+    await new Promise((r) => setTimeout(r, 120));
+    assert.match($("lw").textContent, /İstanbul/);
+    assert.match($("lw").textContent, /USD\/TRY/);
+    assert.match($("lw").textContent, /çevrimdışı/);
+    assert.ok($("msgs").querySelectorAll(".starter.live").length === 6, "six live templates on the empty state");
+    for (const v of ["projects", "data", "deploy", "notebook", "motor", "settings", "build"]) {
       w.document.querySelector(`.nav-btn[data-view="${v}"]`).click();
       await new Promise((r) => setTimeout(r, 30));
       assert.equal($("view-" + v).hidden, false, v + " visible");
     }
-    // Demo project (works without a key)
+    // Live data view: catalog, search, snippet into the chat
+    w.document.querySelector('.nav-btn[data-view="data"]').click();
+    await new Promise((r) => setTimeout(r, 30));
+    const { CATALOG } = await import(pathToFileURL(DOCS + "js/apis.js").href);
+    assert.equal($("d-list").querySelectorAll(".api").length, CATALOG.length);
+    assert.equal($("d-live").checked, true, "live data on by default");
+    $("d-search").value = "deprem"; $("d-search").dispatchEvent(new w.Event("input"));
+    assert.ok($("d-list").querySelectorAll(".api").length >= 2 && $("d-list").querySelectorAll(".api").length < CATALOG.length);
+    $("d-list").querySelector('[data-add="usgs"]').click();
+    assert.equal($("view-build").hidden, false);
+    assert.match($("prompt").value, /earthquake\.usgs\.gov/);
+    $("prompt").value = "";
+    // Preview sandbox: scripts/forms/modals/popups, never same-origin (keys stay in the Studio's origin)
+    const sb = $("pv-frame").getAttribute("sandbox");
+    for (const k of ["allow-scripts", "allow-forms", "allow-modals", "allow-popups"]) assert.ok(sb.includes(k), k);
+    assert.ok(!sb.includes("allow-same-origin"));
+    // Demo project (works without a key): live dashboard
     w.document.querySelector('.nav-btn[data-view="projects"]').click();
     await new Promise((r) => setTimeout(r, 30));
-    assert.ok($("tpl-grid").children.length >= 15, "templates rendered");
+    assert.ok($("tpl-grid").children.length >= 21, "templates rendered (6 live + 15)");
     $("pr-demo").click();
-    await new Promise((r) => setTimeout(r, 800));
+    for (let i = 0; i < 60 && !($("pv-frame").getAttribute("srcdoc") || "").includes("Canlı Pano"); i++) await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => setTimeout(r, 600));
     assert.equal($("view-build").hidden, false);
     const srcdoc = $("pv-frame").getAttribute("srcdoc") || "";
-    assert.match(srcdoc, /Kahve Durağı/);
+    assert.match(srcdoc, /Canlı Pano/);
     assert.match(srcdoc, /<style data-href="style.css">/);
+    assert.match(srcdoc, /root\.KovanDB = KovanDB/, "kovan-db.js inlined");
+    assert.match(srcdoc, /api\.frankfurter\.dev/);
     assert.equal($("pv-page").options.length, 2, "two pages in the selector");
     assert.ok($("tree").textContent.includes("app.js"));
+    assert.ok($("tree").textContent.includes("kovan-db.js"));
     $("wt-code").click();
     await new Promise((r) => setTimeout(r, 30));
     assert.equal($("w-code").hidden, false);
@@ -81,8 +112,11 @@ test("UI boots, renders the builder and switches views without errors", async ()
     await new Promise((r) => setTimeout(r, 30));
     assert.equal($("view-settings").hidden, false);
     await new Promise((r) => setTimeout(r, 300));
-    const providerCalls = fetchCalls.filter((u) => !u.startsWith("https://openrouter.ai/api/v1/models"));
-    assert.deepEqual(providerCalls, [], "no provider calls without a key (only the public model list)");
+    const { WIDGET_SOURCES } = await import(pathToFileURL(DOCS + "js/livewidgets.js").href);
+    const widgetUrls = Object.values(WIDGET_SOURCES);
+    assert.ok(fetchCalls.some((u) => widgetUrls.includes(u)), "live widget strip tried the verified APIs");
+    const providerCalls = fetchCalls.filter((u) => !u.startsWith("https://openrouter.ai/api/v1/models") && !widgetUrls.includes(u));
+    assert.deepEqual(providerCalls, [], "no provider calls without a key (only the public model list + live widgets)");
     assert.deepEqual(errors, []);
   } finally {
     console.error = origErr;
@@ -132,7 +166,12 @@ test("UI end-to-end: key -> prompt -> streamed files -> preview -> edit/delete -
     assert.equal(bodies.length, 1);
     assert.match(bodies[0].messages[0].content, /OUTPUT PROTOCOL/);
     assert.match(bodies[0].messages[1].content, /kafe için rezervasyon/);
+    // live data + backend rules are injected, with the data layer files managed by the Studio
+    assert.match(bodies[0].messages[0].content, /# LIVE DATA \(mandatory/);
+    assert.match(bodies[0].messages[0].content, /# DATA LAYER & BACKEND/);
+    assert.match(bodies[0].messages[0].content, /KovanDB\.sendForm/);
     const tree = $("tree").textContent;
+    assert.ok(tree.includes("kovan-db.js") && tree.includes("kovan-config.js"), "helpers added to the web project");
     assert.ok(tree.includes("index.html") && tree.includes("style.css") && tree.includes("menu.html"), tree);
     assert.match($("pv-frame").getAttribute("srcdoc"), /Kahve Evi/);
     assert.match($("pv-frame").getAttribute("srcdoc"), /h1\{color:brown\}/);
@@ -148,6 +187,8 @@ test("UI end-to-end: key -> prompt -> streamed files -> preview -> edit/delete -
     const ctx = bodies[1].messages[bodies[1].messages.length - 1].content;
     assert.match(ctx, /<current_project>/);
     assert.match(ctx, /<file path="menu.html">/);
+    assert.match(ctx, /<file path="kovan-db.js" managed="true">/, "managed helper is not resent in full");
+    assert.ok(!ctx.includes("supaCollection"), "helper source stays out of the context");
     assert.ok(!$("tree").textContent.includes("menu.html"), "menu.html deleted");
     assert.match($("pv-frame").getAttribute("srcdoc"), /h1\{color:black\}/);
     // undo -> previous version (menu.html back)

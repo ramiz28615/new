@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yörünge · Uzay haberleri</title>
+  <meta name="description" content="Spaceflight News API'den güncel uzay ve havacılık haberleri, NASA'nın günün astronomi görseli.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚀%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="kovan-config.js"></script>
+  <script src="kovan-db.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><i aria-hidden="true">🚀</i> Yörünge <small class="muted">uzay haberleri</small></div>
+      <form id="search" class="search" role="search"><label class="sr" for="q">Haberlerde ara</label><input id="q" type="search" placeholder="Ara: Mars, Artemis, SpaceX…"></form>
+    </header>
+
+    <section class="apod card" id="apod" aria-labelledby="apod-title" aria-busy="true">
+      <div class="sk apod-img"></div>
+      <div><div class="sk" style="height:14px;width:30%"></div><div class="sk" style="height:28px;width:70%;margin-top:10px"></div><div class="sk" style="height:60px;margin-top:10px"></div></div>
+    </section>
+
+    <div class="row">
+      <div class="tabs" role="tablist" aria-label="Tür">
+        <button role="tab" aria-selected="true" data-kind="articles">Haberler</button>
+        <button role="tab" aria-selected="false" data-kind="blogs">Bloglar</button>
+        <button role="tab" aria-selected="false" data-kind="reports">Raporlar</button>
+      </div>
+      <span class="chip" id="status">Yükleniyor…</span>
+    </div>
+
+    <main><div class="news" id="news" aria-live="polite" aria-busy="true"></div>
+      <div class="more"><button class="btn" id="more" hidden>Daha fazla yükle</button></div></main>
+
+    <footer class="src">
+      <span>Haberler: <a href="https://spaceflightnewsapi.net" target="_blank" rel="noopener">Spaceflight News API</a> (orijinal dilinde, kaynağa bağlantılı) · Görsel: <a href="https://apod.nasa.gov" target="_blank" rel="noopener">NASA APOD</a></span>
+      <span id="updated"></span>
+    </footer>
+  </div>
+  <script src="app.js" defer></script>
+</body>
+</html>

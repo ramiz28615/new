@@ -4,7 +4,11 @@ import { ProjectStore, newProject, snapshot, restoreVersion, duplicateProject, s
 import { PROVIDERS, streamChat, listModels, pickFreeModel, estimateCost, ProviderError } from "./providers.js";
 import { FileStreamParser, stripFileBlocks, fallbackFromText } from "./parser.js";
 import { systemPrompt, buildMessages, ENHANCE_PROMPT, fixErrorPrompt, projectContext } from "./prompts.js";
-import { buildPreview, standaloneDocument } from "./preview.js";
+import { buildPreview, standaloneDocument, PREVIEW_SANDBOX, PREVIEW_ALLOW } from "./preview.js";
+import { CATALOG, CATEGORIES, FORM_PROVIDERS, VERIFIED_AT, searchCatalog, snippetFor, testApi } from "./apis.js";
+import { normalizeBackend, ensureHelpers, schemaSql, detectCollections, SCHEMA_STEPS } from "./backend.js";
+import { LIVE_TEMPLATES, DEMO_TEMPLATE, loadLiveTemplate } from "./livetemplates.js";
+import { mountWidgets } from "./livewidgets.js";
 import { exportZip, importZip, loadJSZip } from "./zip.js";
 import { deployToGitHub, deployErrorMessage, sanitizeRepoName } from "./deploy.js";
 import { encodeShare, decodeShare } from "./share.js";
@@ -12,7 +16,6 @@ import { createEditor } from "./editor.js";
 import { TYPES, TYPE_IDS, TEMPLATES, detectType, reviewPrompt, runCommands, pythonEntry, snackUrl, snackPayload,
   pyinstallerWorkflow, easWorkflow, easConfig, PYINSTALLER_WORKFLOW_PATH, EAS_WORKFLOW_PATH } from "./projecttypes.js";
 import { sortPaths, htmlPages, isBinaryContent, isTextPath, mimeOf, normPath, resolveRef, estimateTokens, slugify, bytesToDataUrl } from "./vfs.js";
-import { demoFiles } from "./samples.js";
 import { initMotor } from "./motor.js";
 import { initNotebook } from "./notebook.js";
 
@@ -88,8 +91,17 @@ function loadCfg() {
     provider: PROVIDERS[d.provider] ? d.provider : "openrouter",
     keys: d.keys || {}, models: d.models || {}, modelInfo: d.modelInfo || {},
     maxTokens: d.maxTokens || 16000, temperature: d.temperature ?? "", baseUrl: d.baseUrl || "",
+    liveData: d.liveData !== false,
   };
 }
+const backendCfg = () => normalizeBackend(settings.get("backend", {}) || {});
+const isWeb = (type) => type === "web" || type === "react";
+/** Request text used to pick catalog APIs: the new prompt plus the last user turns (keeps edits on topic). */
+function promptText(prompt) {
+  const prev = S.p ? S.p.messages.filter((m) => m.role === "user").slice(-3).map((m) => m.content).join("\n") : "";
+  return (prev + "\n" + (prompt || "")).slice(-4000);
+}
+function sysPrompt(type, prompt) { return systemPrompt(type, { text: promptText(prompt), liveData: S.cfg.liveData, backend: backendCfg() }); }
 function saveCfg() { settings.set("ai", S.cfg); }
 function activeCfg() {
   const c = S.cfg, p = c.provider;
@@ -164,17 +176,21 @@ function emptyState() {
   const hasKey = !!activeCfg().apiKey;
   const type = typeOf();
   const starters = TEMPLATES.filter((x) => (S.p.autoType ? x.type === "web" || ["py-cli", "rn-habits", "bash-backup"].includes(x.id) : x.type === type)).slice(0, 8);
+  const live = (S.p.autoType || type === "web") ? LIVE_TEMPLATES : [];
   el.innerHTML = `<h2>${esc(t("empty.title"))}</h2>
+    <div class="lw" id="lw" role="status" aria-label="Canlı veri"></div>
     ${hasKey ? `<p class="muted">${esc(t("empty.ready"))}</p>` : `<ol>
       <li>${t("empty.s1")}</li><li>${esc(t("empty.s2"))}</li><li>${esc(t("empty.s3"))}</li></ol>
       <div class="toolbar"><button class="btn btn-primary btn-sm" data-act="settings">${esc(t("empty.setkey"))}</button><button class="btn btn-sm" data-act="demo">${esc(t("demo"))}</button></div>`}
+    ${live.length ? `<h3>${esc(t("live.tpls"))}</h3><div class="starters">${live.map((s) => `<button class="starter live" data-tpl="${s.id}"><span aria-hidden="true">${s.icon}</span><span>${esc(t("tpl." + s.id))}<small class="badge-live">● ${esc(t("live.tpl.badge"))}</small></span></button>`).join("")}</div><h3>${esc(t("templates"))}</h3>` : ""}
     <div class="starters">${starters.map((s) => `<button class="starter" data-tpl="${s.id}"><span aria-hidden="true">${s.icon}</span><span>${esc(t("tpl." + s.id))}<small>${esc(TYPES[s.type].label)}</small></span></button>`).join("")}</div>`;
+  mountWidgets(el.querySelector("#lw")).catch(() => {});
   el.addEventListener("click", (e) => {
     const b = e.target.closest("[data-tpl],[data-act]");
     if (!b) return;
     if (b.dataset.act === "settings") showView("settings");
     else if (b.dataset.act === "demo") openDemo();
-    else useTemplate(TEMPLATES.find((x) => x.id === b.dataset.tpl));
+    else useTemplate(findTemplate(b.dataset.tpl));
   });
   return el;
 }
@@ -471,6 +487,8 @@ async function send(prompt, opts = {}) {
   // type
   if (p.autoType && !Object.keys(p.files).length) { p.type = detectType(prompt); renderTypeSelect(); renderRunner(); }
   if (p.name === DEFAULT_NAME() || !p.name) { p.name = prompt.replace(/\s+/g, " ").split(" ").slice(0, 5).join(" ").slice(0, 48); $("pname").value = p.name; }
+  // Studio-managed data layer for web projects (kovan-config.js + kovan-db.js)
+  if (isWeb(p.type)) ensureHelpers(p.files, backendCfg());
   // baseline version for undo / retry
   const last = p.versions[p.versions.length - 1];
   if (!last || JSON.stringify(last.files) !== JSON.stringify(p.files)) snapshot(p, Object.keys(p.files).length ? t("ver.manual") : t("ver.empty"));
@@ -537,7 +555,7 @@ async function send(prompt, opts = {}) {
 
   let result = null, error = null;
   try {
-    result = await streamChat({ cfg, system: systemPrompt(p.type), messages, signal: ac.signal, vision, onDelta: (chunk) => handle(parser.feed(chunk)) });
+    result = await streamChat({ cfg, system: sysPrompt(p.type, prompt), messages, signal: ac.signal, vision, onDelta: (chunk) => handle(parser.feed(chunk)) });
   } catch (e) { error = e; }
   handle(parser.finish());
   // Protocol not followed: try a fenced full document.
@@ -625,7 +643,7 @@ function updateEstimate() {
     if (!S.p) return;
     const prompt = $("prompt").value;
     const hist = S.p.messages.slice(-8).map((m) => stripFileBlocks(m.content || "")).join("\n");
-    const inTok = estimateTokens(systemPrompt(typeOf()) + projectContext(S.p.files) + hist + prompt) + S.attachments.length * 1000;
+    const inTok = estimateTokens(sysPrompt(typeOf(), prompt) + projectContext(S.p.files) + hist + prompt) + S.attachments.length * 1000;
     const info = modelInfo();
     const outGuess = Object.keys(S.p.files).length ? 4000 : 9000;
     const cost = info && info.pricing ? estimateCost(info.pricing, { input: inTok, output: outGuess }) : null;
@@ -773,6 +791,7 @@ function showView(v) {
   if (v === "projects") renderProjects();
   if (v === "deploy") renderDeploy();
   if (v === "settings") renderSettings();
+  if (v === "data") renderData();
   if (v === "notebook") { if (!S.notebook) S.notebook = initNotebook(); S.notebook.boot(); }
   if (v === "build" && editor) setTimeout(() => editor.refresh(), 30);
 }
@@ -800,7 +819,7 @@ async function renderProjects() {
       <div class="meta">${Object.keys(p.files || {}).length} ${esc(t("files"))} · ${(p.versions || []).length} ${esc(t("versions"))} · ${fmtTime(p.updatedAt)}</div>
       <div class="acts"><button class="btn btn-sm btn-primary" data-pa="open" data-id="${p.id}">${esc(t("open"))}</button><button class="btn btn-sm" data-pa="dup" data-id="${p.id}">${esc(t("duplicate"))}</button><button class="btn btn-sm" data-pa="zip" data-id="${p.id}">ZIP</button><button class="btn btn-sm btn-danger" data-pa="del" data-id="${p.id}">${esc(t("delete"))}</button></div>
     </div>`).join("") : `<p class="muted">${esc(t("projects.none"))}</p>`;
-  $("tpl-grid").innerHTML = TEMPLATES.map((x) => `<div class="card" role="button" tabindex="0" data-tpl="${x.id}"><h3>${x.icon} ${esc(t("tpl." + x.id))}</h3><div class="meta">${esc(TYPES[x.type].label)}</div><p>${esc(x.prompt)}</p></div>`).join("");
+  $("tpl-grid").innerHTML = LIVE_TEMPLATES.map((x) => `<div class="card" role="button" tabindex="0" data-tpl="${x.id}"><h3>${x.icon} ${esc(t("tpl." + x.id))}</h3><div class="meta">● ${esc(t("live.tpl.badge"))} · ${esc(x.apis.join(", "))}</div><p>${esc(x.prompt)}</p></div>`).join("") + TEMPLATES.map((x) => `<div class="card" role="button" tabindex="0" data-tpl="${x.id}"><h3>${x.icon} ${esc(t("tpl." + x.id))}</h3><div class="meta">${esc(TYPES[x.type].label)}</div><p>${esc(x.prompt)}</p></div>`).join("");
 }
 $("proj-grid").addEventListener("click", async (e) => {
   const b = e.target.closest("[data-pa]");
@@ -821,13 +840,15 @@ function tplHandler(e) {
   const c = e.target.closest("[data-tpl]");
   if (!c || (e.type === "keydown" && e.key !== "Enter" && e.key !== " ")) return;
   e.preventDefault();
-  useTemplate(TEMPLATES.find((x) => x.id === c.dataset.tpl));
+  useTemplate(findTemplate(c.dataset.tpl));
 }
+function findTemplate(id) { return LIVE_TEMPLATES.find((x) => x.id === id) || TEMPLATES.find((x) => x.id === id); }
 $("tpl-grid").addEventListener("click", tplHandler);
 $("tpl-grid").addEventListener("keydown", tplHandler);
 async function useTemplate(tp) {
   if (!tp) return;
   if (S.gen) return;
+  if (tp.dir) { await openLiveTemplate(tp); return; }
   if (Object.keys(S.p.files).length || S.p.messages.length) await createProject({ type: tp.type, autoType: false, name: t("tpl." + tp.id) });
   else { S.p.type = tp.type; S.p.autoType = false; S.p.name = t("tpl." + tp.id); renderAll(); }
   showView("build"); setPane("chat");
@@ -835,11 +856,24 @@ async function useTemplate(tp) {
   if (activeCfg().apiKey) send(tp.prompt);
   else { toast(t("need.key"), "warn", 6000); $("prompt").focus(); }
 }
-async function openDemo() {
-  await createProject({ name: t("demo.name"), files: demoFiles(), type: "web", autoType: false });
-  S.p.messages.push({ id: "a0", role: "assistant", content: t("demo.msg"), changed: Object.keys(demoFiles()), at: Date.now(), model: "demo" });
-  await persist(); renderAll(); showView("build");
+/** Ready-made live-data project: no AI key needed. */
+async function openLiveTemplate(tp, { name, msg } = {}) {
+  let files;
+  try { files = await loadLiveTemplate(tp, { backend: backendCfg() }); }
+  catch (e) { toast(t("live.tpl.fail", { e: e.message }), "error", 8000); return null; }
+  const title = name || t("tpl." + tp.id);
+  const reuse = S.p && !Object.keys(S.p.files).length && !S.p.messages.length;
+  if (reuse) { S.p.files = files; S.p.type = tp.type; S.p.autoType = false; S.p.name = title; snapshot(S.p, title); }
+  else await createProject({ name: title, files, type: tp.type, autoType: false });
+  S.p.messages.push({ id: "a" + Date.now(), role: "assistant", content: msg || t("live.tpl.msg", { apis: tp.apis.join(", ") }), changed: Object.keys(files), at: Date.now(), model: "şablon" });
+  if (reuse) snapshot(S.p, title);
+  await persist(); S.page = "index.html"; renderAll(); showView("build");
   if (isMobile()) setPane("run");
+  toast(t("live.tpl.loaded", { n: title }), "ok", 3500);
+  return S.p;
+}
+async function openDemo() {
+  return openLiveTemplate(DEMO_TEMPLATE, { name: t("demo.name"), msg: t("demo.live.msg") });
 }
 
 // ----- deploy view
@@ -897,6 +931,93 @@ function renderSettings() {
   $("s-max").value = c.maxTokens; $("s-temp").value = c.temperature;
   $("s-theme").value = document.documentElement.dataset.theme; $("s-lang").value = getLang();
   $("s-msg").textContent = settings.persistent() ? "" : t("set.nopersist");
+  renderBackendForm();
+}
+
+// ----- backend (forms + Supabase) settings
+function renderBackendForm() {
+  const b = settings.get("backend", {}) || {};
+  const f = b.forms || {}, sb = b.supabase || {};
+  $("be-form-provider").innerHTML = `<option value="">${esc(t("be.forms.none"))}</option>` + Object.entries(FORM_PROVIDERS).map(([id, p]) => `<option value="${id}">${esc(p.label)}</option>`).join("");
+  $("be-form-provider").value = FORM_PROVIDERS[f.provider] ? f.provider : "";
+  $("be-form-key").value = f.key || "";
+  $("be-sb-url").value = sb.url || ""; $("be-sb-key").value = sb.anonKey || "";
+  fillFormHelp();
+}
+function fillFormHelp() {
+  const p = FORM_PROVIDERS[$("be-form-provider").value];
+  $("be-form-key").disabled = !p;
+  $("be-form-key-lbl").textContent = p ? p.field : "Anahtar / e-posta";
+  $("be-form-help").textContent = p ? p.help : "Form servisi seçilmezse gönderimler tarayıcıda saklanır (Supabase bağlıysa veritabanına).";
+}
+async function saveBackend() {
+  const url = $("be-sb-url").value.trim();
+  if (url && !/^https:\/\//.test(url)) { toast(t("be.badurl"), "warn", 6000); $("be-sb-url").focus(); return; }
+  const raw = { forms: { provider: $("be-form-provider").value, key: $("be-form-key").value.trim() }, supabase: { url, anonKey: $("be-sb-key").value.trim() } };
+  settings.set("backend", raw);
+  const n = normalizeBackend(raw);
+  if (S.p && isWeb(typeOf()) && Object.keys(S.p.files).length) {
+    const ch = ensureHelpers(S.p.files, n);
+    if (ch.length) { snapshot(S.p, "Arka uç ayarları"); await persist(); renderTree(); schedulePreview(0); }
+  }
+  $("be-msg").textContent = t("be.saved");
+  toast(t("be.saved"), "ok", 1800);
+  updateEstimate();
+}
+function backendSummary() {
+  const n = backendCfg();
+  return t("be.status.forms", { v: n.forms.provider ? FORM_PROVIDERS[n.forms.provider].label : t("be.forms.none") }) + " · " +
+    t("be.status.db", { v: n.supabase.url ? "Supabase (" + n.supabase.url.replace(/^https:\/\//, "") + ")" : t("be.local") });
+}
+async function showSchema() {
+  const cols = S.p ? detectCollections(S.p.files) : [];
+  const existing = S.p && S.p.files["supabase/schema.sql"];
+  const sql = existing || schemaSql(cols);
+  const note = !existing && !cols.length ? `<p class="muted">${esc(t("be.sql.none"))}</p>` : "";
+  const body = `<ol class="steps">${SCHEMA_STEPS.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>${note}<textarea class="input sql-box mono" id="sql-text" readonly spellcheck="false">${esc(sql)}</textarea>`;
+  const p = modal({ title: t("be.sql.title"), body, html: true, ok: t("be.sql.copy"), cancel: t("cancel") });
+  const ok = await p;
+  if (ok) { const copied = await copyText(sql); toast(copied ? t("copied") : sql.slice(0, 60), copied ? "ok" : "warn", 2000); }
+}
+
+// ----- live data catalog view
+function renderData() {
+  $("d-live").checked = S.cfg.liveData !== false;
+  $("d-live-note").textContent = S.cfg.liveData !== false ? t("data.on") : t("data.off");
+  if (!$("d-cat").options.length) $("d-cat").innerHTML = `<option value="">Tüm kategoriler</option>` + Object.entries(CATEGORIES).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
+  $("d-be-status").textContent = backendSummary();
+  renderApiList();
+}
+function renderApiList() {
+  const list = searchCatalog($("d-search").value, $("d-cat").value);
+  $("d-count").textContent = t("data.count", { n: list.length, d: new Date(VERIFIED_AT + "T12:00:00").toLocaleDateString(getLang() === "en" ? "en-GB" : "tr-TR") });
+  $("d-list").innerHTML = list.length ? list.map((a) => `<article class="api" role="listitem" data-api="${a.id}">
+      <h3>${esc(a.name)} <span class="chip">${esc(CATEGORIES[a.category])}</span>${a.status === "limited" ? `<span class="chip" title="${esc(t("data.limited"))}">kota</span>` : `<span class="chip chip--on">✓ doğrulandı</span>`}</h3>
+      <p>${esc(a.desc)}</p>
+      <code class="ep">GET ${esc(a.example)}</code>
+      <span class="rate">${esc(a.rate)}</span>
+      <div class="acts"><button class="btn btn-sm" data-test="${a.id}">▶ ${esc(t("data.test"))}</button><button class="btn btn-sm btn-primary" data-add="${a.id}">＋ ${esc(t("data.add"))}</button></div>
+      <pre class="out" hidden></pre></article>`).join("") : `<p class="muted">${esc(t("data.none"))}</p>`;
+}
+async function runApiTest(id, btn) {
+  const api = CATALOG.find((a) => a.id === id);
+  const out = btn.closest(".api").querySelector(".out");
+  out.hidden = false; out.classList.remove("bad"); out.textContent = t("data.testing");
+  btn.disabled = true;
+  const r = await testApi(api);
+  btn.disabled = false;
+  const head = (r.ok ? "✓ " : "✗ ") + (r.status ? "HTTP " + r.status : r.error || "Hata") + " · " + r.ms + " ms\n";
+  let body = r.json != null ? JSON.stringify(r.json, null, 2) : r.text || r.error || "";
+  if (body.length > 6000) body = body.slice(0, 6000) + "\n…";
+  out.textContent = head + body;
+  out.classList.toggle("bad", !r.ok);
+}
+function addApiToChat(id) {
+  const api = CATALOG.find((a) => a.id === id);
+  const ta = $("prompt");
+  ta.value = (ta.value.trim() ? ta.value.trim() + "\n\n" : "") + snippetFor(api);
+  showView("build"); setPane("chat"); autoGrow(); updateEstimate(); ta.focus();
+  toast(t("data.added"), "ok", 2500);
 }
 function fillProviderFields() {
   const prov = $("s-provider").value, P = PROVIDERS[prov];
@@ -1058,6 +1179,19 @@ function bind() {
   $("gh-go").addEventListener("click", doDeploy);
   $("gh-forget").addEventListener("click", () => { settings.set("ghToken", null); $("gh-token").value = ""; toast(t("deploy.forgot"), "ok"); });
   $("dl-netlify").addEventListener("click", () => downloadZip("-netlify"));
+  // live data + backend
+  $("d-live").addEventListener("change", () => { S.cfg.liveData = $("d-live").checked; saveCfg(); renderData(); updateEstimate(); });
+  $("d-search").addEventListener("input", renderApiList);
+  $("d-cat").addEventListener("change", renderApiList);
+  $("d-list").addEventListener("click", (e) => {
+    const tb = e.target.closest("[data-test]"); if (tb) { runApiTest(tb.dataset.test, tb); return; }
+    const ab = e.target.closest("[data-add]"); if (ab) addApiToChat(ab.dataset.add);
+  });
+  $("d-be-settings").addEventListener("click", () => { showView("settings"); setTimeout(() => $("be-panel").scrollIntoView({ block: "start" }), 30); });
+  $("d-sql").addEventListener("click", showSchema);
+  $("be-form-provider").addEventListener("change", fillFormHelp);
+  $("be-save").addEventListener("click", saveBackend);
+  $("be-sql").addEventListener("click", showSchema);
   // settings
   $("s-provider").addEventListener("change", fillProviderFields);
   $("s-key-show").addEventListener("click", () => { const k = $("s-key"); k.type = k.type === "password" ? "text" : "password"; $("s-key-show").textContent = k.type === "password" ? t("show") : t("hide"); });
@@ -1097,6 +1231,8 @@ async function boot() {
   const lang = settings.get("lang", (navigator.language || "tr").toLowerCase().startsWith("tr") ? "tr" : "tr");
   setLang(lang); document.documentElement.lang = lang; applyI18n(document); $("lang-btn").textContent = lang === "tr" ? "EN" : "TR";
   S.cfg = loadCfg();
+  $("pv-frame").setAttribute("sandbox", PREVIEW_SANDBOX);
+  $("pv-frame").setAttribute("allow", PREVIEW_ALLOW);
   S.store = await new ProjectStore().init();
   bind();
   initMotor({ toast, onFiles: async (files, prompt) => { await createProject({ name: "Motor: " + prompt.slice(0, 40), files, type: detectType(prompt, files), autoType: false }); showView("build"); } });
